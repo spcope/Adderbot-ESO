@@ -31,21 +31,54 @@ namespace Adderbot
             await Context.Message.DeleteAsync();
         }
 
+        [Command("addallowedrole")]
+        [Summary("Adds a user role to the allowed list for the raid.")]
+        public async Task AddAllowedRoleAsync([Remainder] string userRole)
+        {
+            Raid r = Adderbot.raids.GetValueOrDefault(Context.Channel.Id);
+            if(r.lead != Context.User.Id)
+            {
+                await Context.User.SendMessageAsync("You are not the lead for this raid and cannot add allowed roles!");
+            }
+            else
+            {
+                SocketRole sr = Context.Guild.Roles.FirstOrDefault(x => x.Name.Equals(userRole));
+                if (sr == null)
+                {
+                    await Context.User.SendMessageAsync("Please enter a valid role!");
+                }
+                else
+                {
+                    r.restrictedRoles.Add(sr);
+                    await Context.User.SendMessageAsync($"Added {userRole} to the list of allowed roles for the raid.");
+                }
+            }
+            await Context.Message.DeleteAsync();
+        }
+
         [Command("create")]
         [Summary("Creates a raid.")]
-        public async Task CreateAsync([Remainder] string raidInfo)
+        public async Task CreateAsync(string rclass, string rtype, string date, string time, string timezone, bool noMelee, [Remainder] string progRole = null)
         {
-            if (!((SocketGuildUser) Context.User).Roles.Contains(Adderbot.trialLead))
+            if (!((SocketGuildUser) Context.User).Roles.Contains(Adderbot.trialLead) 
+                && !((SocketGuildUser) Context.User).GuildPermissions.Administrator)
             {
                 await Context.User.SendMessageAsync("You do not have permission to create raids!");
                 await Context.Message.DeleteAsync();
                 return;
             }
-            string[] info = raidInfo.Split(' ');
-            bool noMelee = false;
-            if (info.Length == 6)
-                noMelee = true;
-            Raid r = new Raid(Context.User.Id, info[0], info[1], info[2], info[3], info[4], noMelee);
+
+            SocketRole sr;
+
+            if (progRole == null)
+            {
+                sr = Context.Guild.EveryoneRole;
+            }
+            else
+            {
+                sr = Context.Guild.Roles.FirstOrDefault(x => x.Name.Equals(progRole)) ?? Context.Guild.EveryoneRole;
+            }
+            Raid r = new Raid(Context.User.Id, rclass, rtype, date, time, timezone, noMelee, sr);
             r.message = await ReplyAsync(r.Build());
             Adderbot.raids.Add(Context.Channel.Id, r);
             await Context.Message.DeleteAsync();
@@ -101,9 +134,16 @@ namespace Adderbot
 
         public static async Task UpdateRoster(SocketCommandContext scc, string role, string user)
         {
-            Adderbot.raids.TryGetValue(scc.Channel.Id, out Raid r);
-            r.AddPlayer($"<@{scc.User.Id.ToString() + (user ?? "")}>", role);
-            await ((IUserMessage)r.message).ModifyAsync(x => x.Content = r.Build());
+            Raid r = Adderbot.raids.GetValueOrDefault(scc.Channel.Id);
+            if (((SocketGuildUser)scc.User).Roles.Intersect(r.restrictedRoles).Count() == 0)
+            {
+                await scc.User.SendMessageAsync($"You aren't allowed to join this raid, please message <@{r.lead}> for more information.");
+            }
+            else
+            {
+                r.AddPlayer($"<@{scc.User.Id.ToString() + (user ?? "")}>", role);
+                await ((IUserMessage)r.message).ModifyAsync(x => x.Content = r.Build());
+            }
             await scc.Channel.DeleteMessageAsync(scc.Message);
         }
     }

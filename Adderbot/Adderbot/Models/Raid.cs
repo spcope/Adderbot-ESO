@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,6 +16,7 @@ namespace Adderbot.Models
     {
         private List<Role> availableRoles;
         public ulong lead;
+        public List<SocketRole> restrictedRoles;
         public IMessage message;
         public string headline;
         public Dictionary<string, Role> currentPlayers;
@@ -22,8 +24,9 @@ namespace Adderbot.Models
         private readonly bool ignoreRoleType = false;
         private readonly bool noMelee = false;
 
-        public Raid(ulong lead, string rclass, string type, string date, string time, string timezone, bool noMelee = false)
+        public Raid(ulong lead, string rclass, string type, string date, string time, string timezone, bool noMelee, SocketRole progRole)
         {
+            restrictedRoles = new List<SocketRole>() { progRole };
             this.lead = lead;
             string RClass = "";
             switch (rclass.ToLower())
@@ -169,7 +172,12 @@ namespace Adderbot.Models
 
         public string Build()
         {
-            string result = headline + '\n';
+            string result = "";
+            foreach(var role in restrictedRoles)
+            {
+                result += $"{role.Mention} ";
+            }
+            result += $"\n{headline}\n\n";
             switch (type)
             {
                 #region Full Trials
