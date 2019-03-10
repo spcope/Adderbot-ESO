@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using Adderbot.Models;
+using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
 
@@ -36,7 +37,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MeleeAsync([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "m", user);
+            await BaseModule.UpdateRoster(Context, Role.mDPS, user);
         }
         #endregion
 
@@ -64,7 +65,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task M1Async([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "m1", user);
+            await BaseModule.UpdateRoster(Context, Role.mDPS1, user);
         }
         #endregion
 
@@ -90,7 +91,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task M2Async([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "m2", user);
+            await BaseModule.UpdateRoster(Context, Role.mDPS2, user);
         }
         #endregion
 
@@ -116,7 +117,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task M3Async([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "m3", user);
+            await BaseModule.UpdateRoster(Context, Role.mDPS3, user);
         }
         #endregion
 
@@ -142,7 +143,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task M4Async([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "m4", user);
+            await BaseModule.UpdateRoster(Context, Role.mDPS4, user);
         }
         #endregion
 

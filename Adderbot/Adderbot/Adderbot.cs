@@ -1,22 +1,22 @@
-﻿using Adderbot.Models;
-using Adderbot.Services;
+﻿using Adderbot.Services;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using Adderbot.Models;
 
 namespace Adderbot
 {
+
     public class Adderbot
     {
-        public static Dictionary<ulong, Raid> raids;
         public static SocketRole trialLead = null;
+        public static AdderData data;
 
         public async Task StartAsync()
         {
-            raids = new Dictionary<ulong, Raid>();
             IServiceCollection services = new ServiceCollection()
                 .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
                 {
@@ -40,6 +40,13 @@ namespace Adderbot
             serviceProvider.GetRequiredService<CommandHandler>();
 
             await Task.Delay(-1);
+        }
+
+        public static void Save()
+        {
+            TextWriter tw = new StreamWriter($@"{Directory.GetCurrentDirectory()}\adderbot.json");
+            tw.Write(data.ToJson());
+            tw.Close();
         }
     }
 }

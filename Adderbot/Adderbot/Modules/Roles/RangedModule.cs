@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using Adderbot.Models;
+using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
 
@@ -36,7 +37,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task RangedAsync([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "r", user);
+            await BaseModule.UpdateRoster(Context, Role.rDPS, user);
         }
         #endregion
 
@@ -64,7 +65,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task R1Async([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "r1", user);
+            await BaseModule.UpdateRoster(Context, Role.rDPS1, user);
         }
         #endregion
 
@@ -90,7 +91,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task R2Async([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "r2", user);
+            await BaseModule.UpdateRoster(Context, Role.rDPS2, user);
         }
         #endregion
 
@@ -116,7 +117,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task R3Async([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "r3", user);
+            await BaseModule.UpdateRoster(Context, Role.rDPS3, user);
         }
         #endregion
 
@@ -142,7 +143,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task R4Async([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, "r4", user);
+            await BaseModule.UpdateRoster(Context, Role.rDPS4, user);
         }
         #endregion
 

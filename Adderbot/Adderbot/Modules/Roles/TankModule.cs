@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using Adderbot.Models;
+using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace Adderbot.Modules.Roles
         [Command("tank")]
         [Summary("Adds a user as a tank.")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task TankAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, "t", user);
+        public async Task TankAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.T, user);
         #endregion
 
         #region Tank Specifics
@@ -28,7 +29,7 @@ namespace Adderbot.Modules.Roles
         [Command("mt")]
         [Summary("Adds a user as a MT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MTAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, "mt", user);
+        public async Task MTAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.MT, user);
         #endregion
 
         #region OT
@@ -40,7 +41,7 @@ namespace Adderbot.Modules.Roles
         [Command("ot")]
         [Summary("Adds a user as an OT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OTAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, "ot", user);
+        public async Task OTAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.OT, user);
 
         [Command("offtank2")]
         [Summary("Adds a user as an OT2")]
@@ -50,7 +51,7 @@ namespace Adderbot.Modules.Roles
         [Command("ot2")]
         [Summary("Adds a user as an OT2")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OT2Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, "ot2", user);
+        public async Task OT2Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.OT2, user);
         #endregion
         #endregion
     }
