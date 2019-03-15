@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Discord;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -128,7 +129,7 @@ namespace Adderbot.Models
         /// <param name="cps"></param>
         /// <param name="allowedRoleIds"></param>
         [JsonConstructor]
-        public AdderRaid(string type, ulong lead, ulong messageId, string headline, bool ignoreRoleType, 
+        public AdderRaid(string type, ulong lead, ulong messageId, string headline, bool ignoreRoleType,
             bool noMelee, List<Role> availableRoles, List<AdderPlayer> currentPlayers,
             List<ulong> allowedRoles)
         {
@@ -575,36 +576,28 @@ namespace Adderbot.Models
         public string Build()
         {
             string result = "";
-            foreach (var role in AllowedRoles)
-            {
-                if (role == 0)
-                    result += "@everyone ";
-                else
-                    result += $"<@&{role}> ";
-            }
-            result += $"\n{Headline}\n\n";
             switch (Type)
             {
                 #region Full 
                 case "so":
                 case "aa":
-                    result += _generateRole("MT", Role.MT) + _generateRole("OT", Role.OT)
-                        + _generateRole("H1", Role.H1) + _generateRole("H2", Role.H2)
-                        + _generateRole("DPS", Role.mDPS1) + _generateRole("DPS", Role.mDPS2)
-                        + _generateRole("DPS", Role.mDPS3) + _generateRole("DPS", Role.mDPS4)
-                        + _generateRole("DPS", Role.rDPS1) + _generateRole("DPS", Role.rDPS2)
-                        + _generateRole("DPS", Role.rDPS3) + _generateRole("DPS", Role.rDPS4)
+                    result += _generateRole(RoleRepresentations.MT, Role.MT) + _generateRole(RoleRepresentations.OT, Role.OT)
+                        + _generateRole(RoleRepresentations.H1, Role.H1) + _generateRole(RoleRepresentations.H2, Role.H2)
+                        + _generateRole(RoleRepresentations.DPS, Role.mDPS1) + _generateRole(RoleRepresentations.DPS, Role.mDPS2)
+                        + _generateRole(RoleRepresentations.DPS, Role.mDPS3) + _generateRole(RoleRepresentations.DPS, Role.mDPS4)
+                        + _generateRole(RoleRepresentations.DPS, Role.rDPS1) + _generateRole(RoleRepresentations.DPS, Role.rDPS2)
+                        + _generateRole(RoleRepresentations.DPS, Role.rDPS3) + _generateRole(RoleRepresentations.DPS, Role.rDPS4)
                         + _generateAlts();
                     break;
                 case "hof":
                 case "mol":
                 case "hrc":
-                    result += _generateRole("MT", Role.MT) + _generateRole("OT", Role.OT)
-                        + _generateRole("H1", Role.H1) + _generateRole("H2", Role.H2)
-                        + _generateRole("mDPS 1", Role.mDPS1) + _generateRole("mDPS 2", Role.mDPS2)
-                        + _generateRole("mDPS 3", Role.mDPS3) + _generateRole("mDPS 4", Role.mDPS4)
-                        + _generateRole("rDPS 1", Role.rDPS1) + _generateRole("rDPS 2", Role.rDPS2)
-                        + _generateRole("rDPS 3", Role.rDPS3) + _generateRole("rDPS 4", Role.rDPS4)
+                    result += _generateRole(RoleRepresentations.MT, Role.MT) + _generateRole(RoleRepresentations.OT, Role.OT)
+                        + _generateRole(RoleRepresentations.H1, Role.H1) + _generateRole(RoleRepresentations.H2, Role.H2)
+                        + _generateRole($"{RoleRepresentations.mDPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.mDPS} 2", Role.mDPS2)
+                        + _generateRole($"{RoleRepresentations.mDPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.mDPS} 4", Role.mDPS4)
+                        + _generateRole($"{RoleRepresentations.rDPS} 1", Role.rDPS1) + _generateRole($"{RoleRepresentations.rDPS} 2", Role.rDPS2)
+                        + _generateRole($"{RoleRepresentations.rDPS} 3", Role.rDPS3) + _generateRole($"{RoleRepresentations.rDPS} 4", Role.rDPS4)
                         + _generateAlts();
                     break;
                 #endregion
@@ -614,49 +607,99 @@ namespace Adderbot.Models
                 case "cr+1":
                 case "cr+2":
                 case "cr+3":
-                    result += _generateRole("MT", Role.MT) + _generateRole("OT", Role.OT)
-                        + _generateRole("OT 2", Role.OT2) + _generateRole("H1", Role.H1)
-                        + _generateRole("H2", Role.H2);
+                    result += _generateRole(RoleRepresentations.MT, Role.MT) + _generateRole(RoleRepresentations.OT, Role.OT)
+                        + _generateRole(RoleRepresentations.OT2, Role.OT2) + _generateRole(RoleRepresentations.H1, Role.H1)
+                        + _generateRole(RoleRepresentations.H2, Role.H2);
                     if (NoMelee)
                     {
-                        result += _generateRole("rDPS 1", Role.mDPS1) + _generateRole("rDPS 2", Role.mDPS2)
-                            + _generateRole("rDPS 3", Role.mDPS3) + _generateRole("rDPS 4", Role.mDPS4)
-                            + _generateRole("rDPS 5", Role.rDPS1) + _generateRole("rDPS 6", Role.rDPS2)
-                            + _generateRole("rDPS 7", Role.rDPS3);
+                        result += _generateRole($"{RoleRepresentations.rDPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.rDPS} 2", Role.mDPS2)
+                            + _generateRole($"{RoleRepresentations.rDPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.rDPS} 4", Role.mDPS4)
+                            + _generateRole($"{RoleRepresentations.rDPS} 5", Role.rDPS1) + _generateRole($"{RoleRepresentations.rDPS} 6", Role.rDPS2)
+                            + _generateRole($"{RoleRepresentations.rDPS} 7", Role.rDPS3);
                     }
                     else
                     {
-                        result += _generateRole("DPS 1", Role.mDPS1) + _generateRole("DPS 2", Role.mDPS2)
-                           + _generateRole("DPS 3", Role.mDPS3) + _generateRole("DPS 4", Role.mDPS4)
-                           + _generateRole("DPS 5", Role.rDPS1) + _generateRole("DPS 6", Role.rDPS2)
-                           + _generateRole("DPS 7", Role.rDPS3);
+                        result += _generateRole($"{RoleRepresentations.DPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.DPS} 2", Role.mDPS2)
+                           + _generateRole($"{RoleRepresentations.DPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.DPS} 4", Role.mDPS4)
+                           + _generateRole($"{RoleRepresentations.DPS} 5", Role.rDPS1) + _generateRole($"{RoleRepresentations.DPS} 6", Role.rDPS2)
+                           + _generateRole($"{RoleRepresentations.DPS} 7", Role.rDPS3);
                     }
                     result += _generateAlts();
                     break;
                 case "as+0":
                 case "as+1":
                 case "as+2":
-                    result += _generateRole("MT", Role.MT) + _generateRole("OT", Role.OT)
-                        + _generateRole("H1", Role.H1) + _generateRole("H2", Role.H2);
+                    result += _generateRole(RoleRepresentations.MT, Role.MT) + _generateRole(RoleRepresentations.OT, Role.OT)
+                        + _generateRole(RoleRepresentations.H1, Role.H1) + _generateRole(RoleRepresentations.H2, Role.H2);
                     if (NoMelee)
                     {
-                        result += _generateRole("rDPS 1", Role.mDPS1) + _generateRole("rDPS 2", Role.mDPS2)
-                            + _generateRole("rDPS 3", Role.mDPS3) + _generateRole("rDPS 4", Role.mDPS4)
-                            + _generateRole("rDPS 5", Role.rDPS1) + _generateRole("rDPS 6", Role.rDPS2)
-                            + _generateRole("rDPS 7", Role.rDPS3) + _generateRole("rDPS 8", Role.rDPS4);
+                        result += _generateRole($"{RoleRepresentations.rDPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.rDPS} 2", Role.mDPS2)
+                            + _generateRole($"{RoleRepresentations.rDPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.rDPS} 4", Role.mDPS4)
+                            + _generateRole($"{RoleRepresentations.rDPS} 5", Role.rDPS1) + _generateRole($"{RoleRepresentations.rDPS} 6", Role.rDPS2)
+                            + _generateRole($"{RoleRepresentations.rDPS} 7", Role.rDPS3) + _generateRole($"{RoleRepresentations.rDPS} 8", Role.rDPS4);
                     }
                     else
                     {
-                        result += _generateRole("DPS 1", Role.mDPS1) + _generateRole("DPS 2", Role.mDPS2)
-                           + _generateRole("DPS 3", Role.mDPS3) + _generateRole("DPS 4", Role.mDPS4)
-                           + _generateRole("DPS 5", Role.rDPS1) + _generateRole("DPS 6", Role.rDPS2)
-                           + _generateRole("DPS 7", Role.rDPS3) + _generateRole("DPS 8", Role.rDPS4);
+                        result += _generateRole($"{RoleRepresentations.DPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.DPS} 2", Role.mDPS2)
+                           + _generateRole($"{RoleRepresentations.DPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.DPS} 4", Role.mDPS4)
+                           + _generateRole($"{RoleRepresentations.DPS} 5", Role.rDPS1) + _generateRole($"{RoleRepresentations.DPS} 6", Role.rDPS2)
+                           + _generateRole($"{RoleRepresentations.DPS} 7", Role.rDPS3) + _generateRole($"{RoleRepresentations.DPS} 8", Role.rDPS4);
                     }
                     result += _generateAlts();
                     break;
                     #endregion
             }
             return result;
+        }
+
+        public string BuildAllowedRoles()
+        {
+            string result = "";
+            foreach (var role in AllowedRoles)
+            {
+                if (role == 0)
+                    result += "@everyone ";
+                else
+                    result += $"<@&{role}> ";
+            }
+            return result;
+        }
+
+        public Embed BuildEmbed()
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            switch (Type)
+            {
+                case "aa":
+                    eb.Color = Color.Magenta;
+                    break;
+                case "so":
+                    eb.Color = Color.Green;
+                    break;
+                case "hrc":
+                    eb.Color = Color.LightGrey;
+                    break;
+                case "mol":
+                    eb.Color = Color.DarkBlue;
+                    break;
+                case "hof":
+                    eb.Color = Color.Gold;
+                    break;
+                case "as+0":
+                case "as+1":
+                case "as+2":
+                    eb.Color = Color.DarkRed;
+                    break;
+                case "cr+0":
+                case "cr+1":
+                case "cr+2":
+                case "cr+3":
+                    eb.Color = Color.DarkPurple;
+                    break;
+            }
+            eb.Title = Headline;
+            eb.Description = Build();
+            return eb.Build();
         }
 
         private string _generateRole(string role, Role r)
@@ -678,22 +721,22 @@ namespace Adderbot.Models
                 switch (player.Role)
                 {
                     case Role.Alt_Healer:
-                        ret += $"\nAlt Healer: <@{player.PlayerId}>";
+                        ret += $"\n{RoleRepresentations.Alt_Healer}: <@{player.PlayerId}>";
                         break;
                     case Role.Alt_mDPS:
                         if (IgnoreRoleType)
-                            ret += $"\nAlt DPS: <@{player.PlayerId}>";
+                            ret += $"\n{RoleRepresentations.Alt_DPS}: <@{player.PlayerId}>";
                         else
-                            ret += $"\nAlt Melee: <@{player.PlayerId}>";
+                            ret += $"\n{RoleRepresentations.Alt_mDPS}: <@{player.PlayerId}>";
                         break;
                     case Role.Alt_rDPS:
                         if (IgnoreRoleType)
-                            ret += $"\nAlt DPS: <@{player.PlayerId}>";
+                            ret += $"\n{RoleRepresentations.Alt_DPS}: <@{player.PlayerId}>";
                         else
-                            ret += $"\nAlt Ranged: <@{player.PlayerId}>";
+                            ret += $"\n{RoleRepresentations.Alt_rDPS}: <@{player.PlayerId}>";
                         break;
                     case Role.Alt_Tank:
-                        ret += $"\nAlt Tank: <@{player.PlayerId}>";
+                        ret += $"\n{RoleRepresentations.Alt_Tank}: <@{player.PlayerId}>";
                         break;
                 }
             }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using System.Threading.Tasks;
 using Adderbot.Models;
+using System;
 
 namespace Adderbot
 {
@@ -44,9 +45,7 @@ namespace Adderbot
 
         public static void Save()
         {
-            TextWriter tw = new StreamWriter($@"{Directory.GetCurrentDirectory()}\adderbot.json");
-            tw.Write(data.ToJson());
-            tw.Close();
+            File.WriteAllLines($@"C:\Adderbot\adderbot.json", new string[] { data.ToJson() });
         }
     }
 }

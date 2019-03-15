@@ -34,9 +34,12 @@ namespace Adderbot.Services
             _client.Log += Log;
             await _client.LoginAsync(TokenType.Bot, discordToken);
             await _client.StartAsync();
+            await _client.SetGameAsync(";help for a list of commands");
             _client.GuildAvailable += ValidateGuilds;
             _client.JoinedGuild += ValidateGuilds;
             _client.ChannelDestroyed += ValidateChannels;
+            _client.LeftGuild += RemoveGuild;
+            _client.MessageDeleted += ValidateGuilds;
             LoadJSON();
 
             await _commandSvc.AddModuleAsync<BaseModule>(null);
@@ -44,6 +47,32 @@ namespace Adderbot.Services
             await _commandSvc.AddModuleAsync<HealerModule>(null);
             await _commandSvc.AddModuleAsync<MeleeModule>(null);
             await _commandSvc.AddModuleAsync<RangedModule>(null);
+        }
+
+        private Task RemoveGuild(SocketGuild sg)
+        {
+            AdderGuild ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
+            if(ag != null)
+            {
+                Adderbot.data.Guilds.Remove(ag);
+            }
+            Adderbot.Save();
+            return Task.CompletedTask;
+        }
+
+        private Task ValidateGuilds(Cacheable<IMessage, ulong> m, ISocketMessageChannel c)
+        {
+            AdderGuild ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == ((IGuildChannel)c).GuildId);
+            if(ag != null)
+            {
+                var am = ag.ActiveRaids.FirstOrDefault(x => x.Raid.MessageId == m.Id);
+                if(am != null)
+                {
+                    ag.ActiveRaids.Remove(am);
+                }
+            }
+            Adderbot.Save();
+            return Task.CompletedTask;
         }
 
         private Task ValidateChannels(SocketChannel sg)
@@ -62,35 +91,38 @@ namespace Adderbot.Services
             return Task.CompletedTask;
         }
 
-        private Task ValidateGuilds(SocketGuild arg)
+        private async Task ValidateGuilds(SocketGuild sg)
         {
-            List<AdderGuild> ags = new List<AdderGuild>();
-            foreach (var ag in Adderbot.data.Guilds)
+            AdderGuild ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
+            if (ag == null)
             {
-                bool ne = true;
-                foreach (var cg in _client.Guilds)
-                    if (cg.Id == ag.GuildId)
-                        ne = false;
-                if (ne)
-                    ags.Add(ag);
+                Adderbot.data.Guilds.Add(new AdderGuild(sg.Id, 0));
             }
-
-            foreach(var ag in ags)
+            else
             {
-                Adderbot.data.Guilds.Remove(ag);
-            }
-
-            foreach (var cg in _client.Guilds)
-            {
-                bool ne = true;
-                foreach (var ag in Adderbot.data.Guilds)
-                    if (ag.GuildId == cg.Id)
-                        ne = false;
-                if (ne)
-                    Adderbot.data.Guilds.Add(new AdderGuild(cg.Id, 0));
+                List<AdderChannel> tbd = new List<AdderChannel>();
+                foreach(var g in ag.ActiveRaids)
+                {
+                    var c = sg.Channels.FirstOrDefault(x => x.Id == g.ChannelId);
+                    if(c == null)
+                    {
+                        tbd.Add(g);
+                    }
+                    else
+                    {
+                        var m = await ((ISocketMessageChannel)c).GetMessageAsync(g.Raid.MessageId);
+                        if(m == null)
+                        {
+                            tbd.Add(g);
+                        }
+                    }
+                }
+                foreach(var d in tbd)
+                {
+                    ag.ActiveRaids.Remove(d);
+                }
             }
             Adderbot.Save();
-            return Task.CompletedTask;
         }
 
         private Task Log(LogMessage msg)
@@ -103,7 +135,7 @@ namespace Adderbot.Services
         {
             try
             {
-                StreamReader sr = new StreamReader($@"{Directory.GetCurrentDirectory()}\adderbot.json");
+                StreamReader sr = new StreamReader($@"C:\Adderbot\adderbot.json");
                 if (!sr.EndOfStream)
                     Adderbot.data = AdderData.FromJson(sr.ReadToEnd());
                 else

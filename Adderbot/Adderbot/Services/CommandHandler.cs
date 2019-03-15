@@ -37,12 +37,24 @@ namespace Adderbot
                 argPos: argPos,
                 services: _provider);
 
+            await context.Message.DeleteAsync();
+
             // Optionally, we may inform the user if the command fails
             // to be executed; however, this may not always be desired,
             // as it may clog up the request queue should a user spam a
             // command.
-            // if (!result.IsSuccess)
-            // await context.Channel.SendMessageAsync(result.ErrorReason);
+            if (!result.IsSuccess)
+            {
+                if (result.Error == CommandError.BadArgCount)
+                {
+
+                }
+                await context.Channel.SendMessageAsync(result.ErrorReason);
+            }
+            else
+            {
+                Adderbot.Save();
+            }
         }
     }
 }
