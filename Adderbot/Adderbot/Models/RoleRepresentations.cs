@@ -21,5 +21,13 @@ namespace Adderbot.Models
         public static string Alt_DPS = ":eyes: **Alt DPS**";
         public static string Alt_mDPS = ":eyes: **Alt mDPS**";
         public static string Alt_rDPS = ":eyes: **Alt rDPS**";
+
+        public static Dictionary<Role, string> RoleToRepresentation = new Dictionary<Role, string>()
+        {
+            { Role.MT, MT }, { Role.OT, OT }, { Role.OT2, OT2 }, { Role.H1, H1 }, { Role.H2, H2 },
+            { Role.DPS, DPS }, { Role.mDPS, mDPS }, { Role.rDPS, rDPS }, { Role.GH, GH },
+            { Role.KH, KH }, { Role.Alt_Healer, Alt_Healer }, { Role.Alt_Tank, Alt_Tank },
+            { Role.Alt_DPS, Alt_DPS }, { Role.Alt_mDPS, Alt_mDPS }, { Role.Alt_rDPS, Alt_rDPS }
+        };
     }
 }

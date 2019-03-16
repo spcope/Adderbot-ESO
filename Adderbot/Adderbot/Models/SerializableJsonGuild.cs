@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Discord;
@@ -9,9 +10,9 @@ namespace Adderbot.Models
 {
     public enum Role
     {
-        T, MT, OT, OT2, H, H1, H2, GH, KH, rDPS, rDPS1, rDPS2, rDPS3, rDPS4,
-        mDPS, mDPS1, mDPS2, mDPS3, mDPS4, Alt_mDPS, Alt_rDPS, Alt_Tank,
-        Alt_Healer, InvalidRole
+        T, MT, OT, OT2, H, H1, H2, GH, KH, DPS, rDPS, rDPS1, rDPS2, rDPS3, rDPS4,
+        rDPS5, rDPS6, rDPS7, rDPS8, mDPS, mDPS1, mDPS2, mDPS3, mDPS4, mDPS5,
+        mDPS6, mDPS7, mDPS8, Alt_DPS, Alt_mDPS, Alt_rDPS, Alt_Tank, Alt_Healer, InvalidRole
     }
 
     public partial class AdderData
@@ -101,12 +102,6 @@ namespace Adderbot.Models
         [JsonProperty("headline")]
         public string Headline { get; set; }
 
-        [JsonProperty("ignoreRoleType")]
-        public bool IgnoreRoleType { get; set; }
-
-        [JsonProperty("noMelee")]
-        public bool NoMelee { get; set; }
-
         [JsonProperty("availableRoles")]
         public List<Role> AvailableRoles { get; set; }
 
@@ -115,6 +110,15 @@ namespace Adderbot.Models
 
         [JsonProperty("allowedRoles")]
         public List<ulong> AllowedRoles { get; set; }
+
+        [JsonIgnore]
+        private int mNum;
+        
+        [JsonIgnore]
+        private int rNum;
+
+        [JsonIgnore]
+        private int fNum;
 
         /// <summary>
         /// Converts from JSON to JsonRaid
@@ -129,22 +133,19 @@ namespace Adderbot.Models
         /// <param name="cps"></param>
         /// <param name="allowedRoleIds"></param>
         [JsonConstructor]
-        public AdderRaid(string type, ulong lead, ulong messageId, string headline, bool ignoreRoleType,
-            bool noMelee, List<Role> availableRoles, List<AdderPlayer> currentPlayers,
-            List<ulong> allowedRoles)
+        public AdderRaid(string type, ulong lead, ulong messageId, string headline, List<Role> availableRoles, 
+            List<AdderPlayer> currentPlayers, List<ulong> allowedRoles)
         {
             Type = type;
             Lead = lead;
             MessageId = messageId;
             Headline = headline;
-            IgnoreRoleType = ignoreRoleType;
-            NoMelee = noMelee;
             AvailableRoles = availableRoles;
-            AvailableRoles = new List<Role>();
-            foreach (var id in availableRoles)
-                AvailableRoles.Add((Role)id);
             CurrentPlayers = currentPlayers;
             AllowedRoles = allowedRoles;
+            mNum = AvailableRoles.Where(x => x >= Role.mDPS && x <= Role.mDPS8).Count();
+            rNum = AvailableRoles.Where(x => x >= Role.rDPS && x <= Role.rDPS8).Count();
+            fNum = AvailableRoles.Where(x => x == Role.DPS).Count();
         }
 
         /// <summary>
@@ -161,16 +162,15 @@ namespace Adderbot.Models
         /// <param name="noMelee"></param>
         /// <param name="ars"></param>
         public AdderRaid(string rclass, string rtype, string date, string time,
-            string timezone, ulong lead, bool noMelee, List<ulong> ars)
+            string timezone, ulong lead, int mNum, int rNum, int fNum, List<ulong> ars)
         {
             Type = "";
             Lead = lead;
             MessageId = 0;
             Headline = "";
-            IgnoreRoleType = false;
-            NoMelee = noMelee;
             CurrentPlayers = new List<AdderPlayer>();
             AllowedRoles = ars;
+            AvailableRoles = new List<Role>();
 
             string RClass = "";
             switch (rclass.ToLower())
@@ -186,141 +186,124 @@ namespace Adderbot.Models
                     RClass = "v";
                     break;
             }
+            bool illegalNumDps = false;
 
             switch (rtype.ToLower())
             {
                 #region Full Trials
                 case "aa":
-                    Headline = $"Gear up for a {RClass}AA on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>() {
-                        Role.MT, Role.OT, Role.H1, Role.H2, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3, Role.rDPS4
-                    };
-                    IgnoreRoleType = true;
-                    Type = "aa";
+                    Type = RaidTypes.aa;
+                    if ((mNum + rNum + fNum) > 8)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.H1);
+                    AvailableRoles.Add(Role.H2);
                     break;
                 case "hrc":
-                    Headline = $"Gear up for a {RClass}HRC on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>() {
-                        Role.MT, Role.OT, Role.H1, Role.H2, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3, Role.rDPS4
-                    };
-                    Type = "hrc";
+                    Type = RaidTypes.hrc;
+                    if ((mNum + rNum + fNum) > 8)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.H1);
+                    AvailableRoles.Add(Role.H2);
                     break;
                 case "so":
-                    Headline = $"Gear up for a {RClass}SO on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.H1, Role.H2, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3, Role.rDPS4
-                    };
-                    IgnoreRoleType = true;
-                    Type = "so";
+                    Type = RaidTypes.so;
+                    if ((mNum + rNum + fNum) > 8)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.H1);
+                    AvailableRoles.Add(Role.H2);
                     break;
                 case "mol":
-                    Headline = $"Gear up for a {RClass}MoL on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.H1, Role.H2, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3, Role.rDPS4
-                    };
-                    Type = "mol";
+                    Type = RaidTypes.mol;
+                    if ((mNum + rNum + fNum) > 8)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.H1);
+                    AvailableRoles.Add(Role.H2);
                     break;
                 case "hof":
-                    Headline = $"Gear up for a {RClass}HoF on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.H1, Role.H2, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3, Role.rDPS4
-                    };
-                    Type = "hof";
+                    Type = RaidTypes.hof;
+                    if ((mNum + rNum + fNum) > 8)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.H1);
+                    AvailableRoles.Add(Role.H2);
                     break;
                 #endregion
 
                 #region Mini Trials
                 case "cr+0":
-                    Headline = $"Gear up for a {RClass}CR+0 on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.OT2, Role.H1, Role.H2, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3
-                    };
-                    Type = "cr+0";
-                    NoMelee = noMelee;
+                    Type = RaidTypes.cr0;
+                    if ((mNum + rNum + fNum) > 7)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.OT2);
+                    AvailableRoles.Add(Role.GH);
+                    AvailableRoles.Add(Role.KH);
                     break;
                 case "cr+1":
-                    Headline = $"Gear up for a {RClass}CR+1 on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.OT2, Role.KH, Role.GH, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3
-                    };
-                    Type = "cr+1";
-                    NoMelee = noMelee;
+                    Type = RaidTypes.cr1;
+                    if ((mNum + rNum + fNum) > 7)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.OT2);
+                    AvailableRoles.Add(Role.GH);
+                    AvailableRoles.Add(Role.KH);
                     break;
                 case "cr+2":
-                    Headline = $"Gear up for a {RClass}CR+2 on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.OT2, Role.KH, Role.GH, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3
-                    };
-                    Type = "cr+2";
-                    NoMelee = noMelee;
+                    Type = RaidTypes.cr2;
+                    if ((mNum + rNum + fNum) > 7)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.OT2);
+                    AvailableRoles.Add(Role.GH);
+                    AvailableRoles.Add(Role.KH);
                     break;
                 case "cr+3":
-                    Headline = $"Gear up for a {RClass}CR+3 on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.OT2, Role.KH, Role.GH, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3
-                    };
-                    Type = "cr+3";
-                    NoMelee = noMelee;
+                    Type = RaidTypes.cr3;
+                    if ((mNum + rNum + fNum) > 7)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.OT2);
+                    AvailableRoles.Add(Role.GH);
+                    AvailableRoles.Add(Role.KH);
                     break;
                 case "as+0":
-                    Headline = $"Gear up for a {RClass}AS+0 on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.KH, Role.GH, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3, Role.rDPS4
-                    };
-                    Type = "as+0";
-                    NoMelee = noMelee;
+                    Type = RaidTypes.as0;
+                    if ((mNum + rNum + fNum) > 8)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.GH);
+                    AvailableRoles.Add(Role.KH);
                     break;
                 case "as+1":
-                    Headline = $"Gear up for a {RClass}AS+1 on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.KH, Role.GH, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3, Role.rDPS4
-                    };
-                    Type = "as+1";
-                    NoMelee = noMelee;
+                    Type = RaidTypes.as1;
+                    if ((mNum + rNum + fNum) > 8)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.GH);
+                    AvailableRoles.Add(Role.KH);
                     break;
                 case "as+2":
-                    Headline = $"Gear up for a {RClass}AS+2 on {date} @{time} {timezone}!";
-                    AvailableRoles = new List<Role>()
-                    {
-                        Role.MT, Role.OT, Role.KH, Role.GH, Role.mDPS1,
-                        Role.mDPS2, Role.mDPS3, Role.mDPS4,  Role.rDPS1,
-                        Role.rDPS2, Role.rDPS3, Role.rDPS4
-                    };
-                    Type = "as+2";
-                    NoMelee = noMelee;
+                    Type = RaidTypes.as2;
+                    if ((mNum + rNum + fNum) > 8)
+                        illegalNumDps = true;
+                    AvailableRoles.Add(Role.GH);
+                    AvailableRoles.Add(Role.KH);
                     break;
-                    #endregion
+                #endregion
+
+                default:
+                    throw new ArgumentException("Raid type was invalid. Please use the following:\n" + RaidTypes.RaidTypeDescriptors);
+            }
+            if (illegalNumDps)
+                throw new ArgumentException("Could create a raid with that many dps.");
+            Headline = $"Gear up for a {RClass}{Type} on {date} @{time} {timezone}!";
+            AvailableRoles.Add(Role.MT);
+            AvailableRoles.Add(Role.OT);
+            int i;
+            for (i = 0; i < mNum; i++)
+            {
+                AvailableRoles.Add(Role.mDPS1 + i);
+            }
+            for (i = 0; i < rNum; i++)
+            {
+                AvailableRoles.Add(Role.rDPS1 + i);
+            }
+            for (i = 0; i < fNum; i++)
+            {
+                AvailableRoles.Add(Role.DPS);
             }
         }
 
@@ -329,106 +312,34 @@ namespace Adderbot.Models
             switch (r)
             {
                 #region Generics
-                case Role.mDPS:
-                    if (!NoMelee)
+                case Role.DPS:
+                    if (fNum != 0)
                     {
-                        if (!_containsRole(Role.mDPS1))
+                        if (!TryAddDPS(uid))
                         {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.mDPS1));
-                            break;
+                            CurrentPlayers.Add(new AdderPlayer(uid, Role.Alt_DPS));
                         }
-                        else if (!_containsRole(Role.mDPS2))
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Could not add you as a flex DPS to the raid.");
+                    }
+                    break;
+                case Role.mDPS:
+                    if (!TryAddRole(uid, true))
+                    {
+                        if (!TryAddDPS(uid))
                         {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.mDPS2));
-                            break;
-                        }
-                        else if (!_containsRole(Role.mDPS3))
-                        {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.mDPS3));
-                            break;
-                        }
-                        else if (!_containsRole(Role.mDPS4))
-                        {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.mDPS4));
-                            break;
-                        }
-                        else if (!IgnoreRoleType)
-                        {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.Alt_mDPS));
-                            break;
-                        }
-                        else
-                        {
-                            if (!_containsRole(Role.rDPS1))
-                            {
-                                CurrentPlayers.Add(new AdderPlayer(uid, Role.rDPS1));
-                            }
-                            else if (!_containsRole(Role.rDPS2))
-                            {
-                                CurrentPlayers.Add(new AdderPlayer(uid, Role.rDPS2));
-                            }
-                            else if (!_containsRole(Role.rDPS3))
-                            {
-                                CurrentPlayers.Add(new AdderPlayer(uid, Role.rDPS3));
-                            }
-                            else if (!_containsRole(Role.rDPS4))
-                            {
-                                CurrentPlayers.Add(new AdderPlayer(uid, Role.rDPS4));
-                            }
-                            else
-                            {
-                                CurrentPlayers.Add(new AdderPlayer(uid, Role.Alt_rDPS));
-                            }
+                            AddAlt(uid, Role.Alt_mDPS);
                         }
                     }
                     break;
                 case Role.rDPS:
-                    if (!_containsRole(Role.rDPS1))
+                    if (!TryAddRole(uid, false))
                     {
-                        CurrentPlayers.Add(new AdderPlayer(uid, Role.rDPS1));
-                        break;
-                    }
-                    else if (!_containsRole(Role.rDPS2))
-                    {
-                        CurrentPlayers.Add(new AdderPlayer(uid, Role.rDPS2));
-                        break;
-                    }
-                    else if (!_containsRole(Role.rDPS3))
-                    {
-                        CurrentPlayers.Add(new AdderPlayer(uid, Role.rDPS3));
-                        break;
-                    }
-                    else if (!_containsRole(Role.rDPS4))
-                    {
-                        CurrentPlayers.Add(new AdderPlayer(uid, Role.rDPS4));
-                        break;
-                    }
-                    else if (!IgnoreRoleType)
-                    {
-                        CurrentPlayers.Add(new AdderPlayer(uid, Role.Alt_rDPS));
-                        break;
-                    }
-                    else
-                    {
-                        if (!_containsRole(Role.mDPS1))
+                        if (!TryAddDPS(uid))
                         {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.mDPS1));
-                        }
-                        else if (!_containsRole(Role.mDPS2))
-                        {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.mDPS2));
-                        }
-                        else if (!_containsRole(Role.mDPS3))
-                        {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.mDPS3));
-                        }
-                        else if (!_containsRole(Role.mDPS4))
-                        {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.mDPS4));
-                        }
-                        else
-                        {
-                            CurrentPlayers.Add(new AdderPlayer(uid, Role.Alt_mDPS));
+                            AddAlt(uid, Role.Alt_rDPS);
                         }
                     }
                     break;
@@ -517,6 +428,18 @@ namespace Adderbot.Models
                 case Role.rDPS4:
                     _addPlayer(uid, Role.rDPS4);
                     break;
+                case Role.rDPS5:
+                    _addPlayer(uid, Role.rDPS5);
+                    break;
+                case Role.rDPS6:
+                    _addPlayer(uid, Role.rDPS6);
+                    break;
+                case Role.rDPS7:
+                    _addPlayer(uid, Role.rDPS7);
+                    break;
+                case Role.rDPS8:
+                    _addPlayer(uid, Role.rDPS8);
+                    break;
                 #endregion
 
                 #region mDPS
@@ -532,8 +455,53 @@ namespace Adderbot.Models
                 case Role.mDPS4:
                     _addPlayer(uid, Role.mDPS4);
                     break;
+                case Role.mDPS5:
+                    _addPlayer(uid, Role.mDPS5);
+                    break;
+                case Role.mDPS6:
+                    _addPlayer(uid, Role.mDPS6);
+                    break;
+                case Role.mDPS7:
+                    _addPlayer(uid, Role.mDPS7);
+                    break;
+                case Role.mDPS8:
+                    _addPlayer(uid, Role.mDPS8);
+                    break;
                     #endregion
             }
+        }
+
+        private bool TryAddDPS(ulong uid)
+        {
+            if(CurrentPlayers.Where(x => x.Role == Role.DPS).Count() < fNum)
+            {
+                CurrentPlayers.Add(new AdderPlayer(uid, Role.DPS));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private void AddAlt(ulong uid, Role role)
+        {
+            CurrentPlayers.Add(new AdderPlayer(uid, role));
+        }
+
+        private bool TryAddRole(ulong uid, bool isMelee)
+        {
+            Role role = isMelee == true ? Role.mDPS1 : Role.rDPS1;
+            int ctr = isMelee == true ? mNum : rNum;
+            for (int i = 0; i < ctr; i++)
+            {
+                if (AvailableRoles.Contains(role + i) && !_containsRole(role + i))
+                {
+                    CurrentPlayers.Add(new AdderPlayer(uid, role + i));
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void _addPlayer(ulong uid, Role role)
@@ -552,11 +520,11 @@ namespace Adderbot.Models
                 {
                     CurrentPlayers.Add(new AdderPlayer(uid, Role.Alt_Healer));
                 }
-                else if (role >= Role.rDPS && role <= Role.rDPS4)
+                else if (role >= Role.rDPS && role <= Role.rDPS8)
                 {
                     CurrentPlayers.Add(new AdderPlayer(uid, Role.Alt_rDPS));
                 }
-                else if (role >= Role.mDPS && role <= Role.mDPS4)
+                else if (role >= Role.mDPS && role <= Role.mDPS8)
                 {
                     CurrentPlayers.Add(new AdderPlayer(uid, Role.Alt_mDPS));
                 }
@@ -576,79 +544,7 @@ namespace Adderbot.Models
         public string Build()
         {
             string result = "";
-            switch (Type)
-            {
-                #region Full 
-                case "so":
-                case "aa":
-                    result += _generateRole(RoleRepresentations.MT, Role.MT) + _generateRole(RoleRepresentations.OT, Role.OT)
-                        + _generateRole(RoleRepresentations.H1, Role.H1) + _generateRole(RoleRepresentations.H2, Role.H2)
-                        + _generateRole(RoleRepresentations.DPS, Role.mDPS1) + _generateRole(RoleRepresentations.DPS, Role.mDPS2)
-                        + _generateRole(RoleRepresentations.DPS, Role.mDPS3) + _generateRole(RoleRepresentations.DPS, Role.mDPS4)
-                        + _generateRole(RoleRepresentations.DPS, Role.rDPS1) + _generateRole(RoleRepresentations.DPS, Role.rDPS2)
-                        + _generateRole(RoleRepresentations.DPS, Role.rDPS3) + _generateRole(RoleRepresentations.DPS, Role.rDPS4)
-                        + _generateAlts();
-                    break;
-                case "hof":
-                case "mol":
-                case "hrc":
-                    result += _generateRole(RoleRepresentations.MT, Role.MT) + _generateRole(RoleRepresentations.OT, Role.OT)
-                        + _generateRole(RoleRepresentations.H1, Role.H1) + _generateRole(RoleRepresentations.H2, Role.H2)
-                        + _generateRole($"{RoleRepresentations.mDPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.mDPS} 2", Role.mDPS2)
-                        + _generateRole($"{RoleRepresentations.mDPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.mDPS} 4", Role.mDPS4)
-                        + _generateRole($"{RoleRepresentations.rDPS} 1", Role.rDPS1) + _generateRole($"{RoleRepresentations.rDPS} 2", Role.rDPS2)
-                        + _generateRole($"{RoleRepresentations.rDPS} 3", Role.rDPS3) + _generateRole($"{RoleRepresentations.rDPS} 4", Role.rDPS4)
-                        + _generateAlts();
-                    break;
-                #endregion
-
-                #region Mini Trials
-                case "cr+0":
-                case "cr+1":
-                case "cr+2":
-                case "cr+3":
-                    result += _generateRole(RoleRepresentations.MT, Role.MT) + _generateRole(RoleRepresentations.OT, Role.OT)
-                        + _generateRole(RoleRepresentations.OT2, Role.OT2) + _generateRole(RoleRepresentations.H1, Role.H1)
-                        + _generateRole(RoleRepresentations.H2, Role.H2);
-                    if (NoMelee)
-                    {
-                        result += _generateRole($"{RoleRepresentations.rDPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.rDPS} 2", Role.mDPS2)
-                            + _generateRole($"{RoleRepresentations.rDPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.rDPS} 4", Role.mDPS4)
-                            + _generateRole($"{RoleRepresentations.rDPS} 5", Role.rDPS1) + _generateRole($"{RoleRepresentations.rDPS} 6", Role.rDPS2)
-                            + _generateRole($"{RoleRepresentations.rDPS} 7", Role.rDPS3);
-                    }
-                    else
-                    {
-                        result += _generateRole($"{RoleRepresentations.DPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.DPS} 2", Role.mDPS2)
-                           + _generateRole($"{RoleRepresentations.DPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.DPS} 4", Role.mDPS4)
-                           + _generateRole($"{RoleRepresentations.DPS} 5", Role.rDPS1) + _generateRole($"{RoleRepresentations.DPS} 6", Role.rDPS2)
-                           + _generateRole($"{RoleRepresentations.DPS} 7", Role.rDPS3);
-                    }
-                    result += _generateAlts();
-                    break;
-                case "as+0":
-                case "as+1":
-                case "as+2":
-                    result += _generateRole(RoleRepresentations.MT, Role.MT) + _generateRole(RoleRepresentations.OT, Role.OT)
-                        + _generateRole(RoleRepresentations.H1, Role.H1) + _generateRole(RoleRepresentations.H2, Role.H2);
-                    if (NoMelee)
-                    {
-                        result += _generateRole($"{RoleRepresentations.rDPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.rDPS} 2", Role.mDPS2)
-                            + _generateRole($"{RoleRepresentations.rDPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.rDPS} 4", Role.mDPS4)
-                            + _generateRole($"{RoleRepresentations.rDPS} 5", Role.rDPS1) + _generateRole($"{RoleRepresentations.rDPS} 6", Role.rDPS2)
-                            + _generateRole($"{RoleRepresentations.rDPS} 7", Role.rDPS3) + _generateRole($"{RoleRepresentations.rDPS} 8", Role.rDPS4);
-                    }
-                    else
-                    {
-                        result += _generateRole($"{RoleRepresentations.DPS} 1", Role.mDPS1) + _generateRole($"{RoleRepresentations.DPS} 2", Role.mDPS2)
-                           + _generateRole($"{RoleRepresentations.DPS} 3", Role.mDPS3) + _generateRole($"{RoleRepresentations.DPS} 4", Role.mDPS4)
-                           + _generateRole($"{RoleRepresentations.DPS} 5", Role.rDPS1) + _generateRole($"{RoleRepresentations.DPS} 6", Role.rDPS2)
-                           + _generateRole($"{RoleRepresentations.DPS} 7", Role.rDPS3) + _generateRole($"{RoleRepresentations.DPS} 8", Role.rDPS4);
-                    }
-                    result += _generateAlts();
-                    break;
-                    #endregion
-            }
+            
             return result;
         }
 
@@ -700,6 +596,11 @@ namespace Adderbot.Models
             eb.Title = Headline;
             eb.Description = Build();
             return eb.Build();
+        }
+
+        private string GenerateRole(Role role, ulong uid)
+        {
+            return $"{RoleRepresentations.RoleToRepresentation.GetValueOrDefault(role)}: <@{uid}>\n";
         }
 
         private string _generateRole(string role, Role r)

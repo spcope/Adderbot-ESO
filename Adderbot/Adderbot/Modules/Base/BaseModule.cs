@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -176,7 +177,8 @@ namespace Adderbot
         [Command("create")]
         [Summary("Creates a raid.")]
         [RequireBotPermission(ChannelPermission.SendMessages)]
-        public async Task CreateAsync(string rclass, string rtype, string date, string time, string timezone, bool noMelee = false, [Remainder] string progRole = null)
+        public async Task CreateAsync(string rclass, string rtype, string date, string time, string timezone, int mNum = 0, int rNum = 0, 
+            int fNum = 8, [Remainder] string progRole = null)
         {
             ulong gid = Context.Guild.Id;
             AdderGuild g = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == gid);
@@ -219,9 +221,16 @@ namespace Adderbot
                                 }
                             }
                         }
-                        AdderRaid jr = new AdderRaid(rclass, rtype, date, time, timezone, Context.User.Id, noMelee, ars);
-                        jr.MessageId = (await ReplyAsync(jr.BuildAllowedRoles(), false, jr.BuildEmbed())).Id;
-                        g.ActiveRaids.Add(new AdderChannel(Context.Channel.Id, jr));
+                        try
+                        {
+                            var jr = new AdderRaid(rclass, rtype.ToLower(), date, time, timezone, Context.User.Id, mNum, rNum, fNum, ars);
+                            jr.MessageId = (await ReplyAsync(jr.BuildAllowedRoles(), false, jr.BuildEmbed())).Id;
+                            g.ActiveRaids.Add(new AdderChannel(Context.Channel.Id, jr));
+                        }
+                        catch (ArgumentException ae)
+                        {
+                            await Context.User.SendMessageAsync(ae.Message);
+                        }
                     }
                     else
                     {
@@ -394,7 +403,7 @@ namespace Adderbot
             else
             {
                 var ac = g.ActiveRaids.FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
-                
+
                 if (ac == null)
                 {
                     await Context.User.SendMessageAsync("There is no raid in the channel to delete from.");
@@ -568,7 +577,7 @@ namespace Adderbot
                     {
                         await scc.User.SendMessageAsync($"You aren't allowed to join this raid, please message <@{ar.Raid.Lead}> for more information.");
                     }
-                    else if(ar.Raid.CurrentPlayers.Where(x => x.PlayerId == scc.User.Id).Count() != 0)
+                    else if (ar.Raid.CurrentPlayers.Where(x => x.PlayerId == scc.User.Id).Count() != 0)
                     {
                         await scc.User.SendMessageAsync($"You already joined this raid, if you want to change your role, remove" +
                             $" yourself from it and add yourself again.");
@@ -581,7 +590,7 @@ namespace Adderbot
                             {
                                 x.Embed = ar.Raid.BuildEmbed();
                                 x.Content = ar.Raid.BuildAllowedRoles();
-                            }); 
+                            });
                     }
                 }
             }
