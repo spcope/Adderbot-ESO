@@ -350,7 +350,7 @@ namespace Adderbot.Models
         {
             return $"{BuildAllowedRoles()}\n" +
                    $"{Headline}\n" +
-                   $"{}";
+                   $"{GeneratePlayers()}";
         }
 
         public string BuildAllowedRoles()
@@ -423,6 +423,11 @@ namespace Adderbot.Models
                     players += $"{RoleRepresentations.RoleToRepresentation.GetValueOrDefault(role)}:\n";
                 i++;
             }
+
+            var flex = CurrentPlayers.Where(x => x.Role == Role.Dps);
+            var range = CurrentPlayers.Where(x => x.Role >= Role.RDps && x.Role <= Role.RDps8);
+            var melee = CurrentPlayers.Where(x => x.Role >= Role.MDps && x.Role <= Role.MDps8);
+            
             
             
             return players;
@@ -443,37 +448,6 @@ namespace Adderbot.Models
             }
 
             return $"{role}: {user}\n";
-        }
-
-        private string _generateAlts()
-        {
-            string ret = "";
-            foreach (var player in CurrentPlayers.FindAll(x => (x.Role >= Role.AltMDps && x.Role <= Role.AltHealer)))
-            {
-                switch (player.Role)
-                {
-                    case Role.AltHealer:
-                        ret += $"\n{RoleRepresentations.AltHealer}: <@{player.PlayerId}>";
-                        break;
-                    case Role.AltMDps:
-                        if (IgnoreRoleType)
-                            ret += $"\n{RoleRepresentations.AltDps}: <@{player.PlayerId}>";
-                        else
-                            ret += $"\n{RoleRepresentations.AltMDps}: <@{player.PlayerId}>";
-                        break;
-                    case Role.AltRDps:
-                        if (IgnoreRoleType)
-                            ret += $"\n{RoleRepresentations.AltDps}: <@{player.PlayerId}>";
-                        else
-                            ret += $"\n{RoleRepresentations.AltRDps}: <@{player.PlayerId}>";
-                        break;
-                    case Role.AltTank:
-                        ret += $"\n{RoleRepresentations.AltTank}: <@{player.PlayerId}>";
-                        break;
-                }
-            }
-
-            return ret;
         }
     }
 
