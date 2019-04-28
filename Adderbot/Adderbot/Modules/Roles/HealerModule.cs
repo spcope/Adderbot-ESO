@@ -55,7 +55,7 @@ namespace Adderbot.Modules.Roles
         [Command("gh")]
         [Summary("Adds a user as a group healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task GHAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.GH, user);
+        public async Task GHAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Gh, user);
         #endregion
 
         #region KH
@@ -67,7 +67,7 @@ namespace Adderbot.Modules.Roles
         [Command("kh")]
         [Summary("Adds a user as a kite healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task KHAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.KH, user);
+        public async Task KHAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Kh, user);
         #endregion
         #endregion
     }

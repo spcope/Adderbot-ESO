@@ -29,7 +29,7 @@ namespace Adderbot.Modules.Roles
         [Command("mt")]
         [Summary("Adds a user as a MT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MTAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.MT, user);
+        public async Task MTAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Mt, user);
         #endregion
 
         #region OT
@@ -41,7 +41,7 @@ namespace Adderbot.Modules.Roles
         [Command("ot")]
         [Summary("Adds a user as an OT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OTAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.OT, user);
+        public async Task OTAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Ot, user);
 
         [Command("offtank2")]
         [Summary("Adds a user as an OT2")]
@@ -51,7 +51,7 @@ namespace Adderbot.Modules.Roles
         [Command("ot2")]
         [Summary("Adds a user as an OT2")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OT2Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.OT2, user);
+        public async Task OT2Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Ot2, user);
         #endregion
         #endregion
     }

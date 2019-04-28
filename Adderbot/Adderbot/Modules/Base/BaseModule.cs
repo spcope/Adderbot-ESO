@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Adderbot.Constants;
 
 namespace Adderbot
 {
@@ -430,13 +431,13 @@ namespace Adderbot
                                         r = Role.T;
                                         break;
                                     case "mt":
-                                        r = Role.MT;
+                                        r = Role.Mt;
                                         break;
                                     case "ot":
-                                        r = Role.OT;
+                                        r = Role.Ot;
                                         break;
                                     case "ot2":
-                                        r = Role.OT2;
+                                        r = Role.Ot2;
                                         break;
                                     #endregion
 
@@ -451,46 +452,46 @@ namespace Adderbot
                                         r = Role.H2;
                                         break;
                                     case "kh":
-                                        r = Role.KH;
+                                        r = Role.Kh;
                                         break;
                                     case "gh":
-                                        r = Role.GH;
+                                        r = Role.Gh;
                                         break;
                                     #endregion
 
                                     #region Melee
                                     case "m":
-                                        r = Role.mDPS;
+                                        r = Role.MDps;
                                         break;
                                     case "m1":
-                                        r = Role.mDPS1;
+                                        r = Role.MDps1;
                                         break;
                                     case "m2":
-                                        r = Role.mDPS2;
+                                        r = Role.MDps2;
                                         break;
                                     case "m3":
-                                        r = Role.mDPS3;
+                                        r = Role.MDps3;
                                         break;
                                     case "m4":
-                                        r = Role.mDPS4;
+                                        r = Role.MDps4;
                                         break;
                                     #endregion
 
                                     #region Ranged
                                     case "r":
-                                        r = Role.rDPS;
+                                        r = Role.RDps;
                                         break;
                                     case "r1":
-                                        r = Role.rDPS1;
+                                        r = Role.RDps1;
                                         break;
                                     case "r2":
-                                        r = Role.rDPS2;
+                                        r = Role.RDps2;
                                         break;
                                     case "r3":
-                                        r = Role.rDPS3;
+                                        r = Role.RDps3;
                                         break;
                                     case "r4":
-                                        r = Role.rDPS4;
+                                        r = Role.RDps4;
                                         break;
                                         #endregion
                                 }
@@ -542,17 +543,17 @@ namespace Adderbot
             if (isAdmin)
             {
                 eb.Color = Color.Green;
-                eb.Description = CommandHelp.AdminCommandHelp.ToString();
+                eb.Description = CommandHelp.AdminCommandHelp.Representation;
                 await Context.User.SendMessageAsync(null, false, eb.Build());
             }
             if (isTrialLead)
             {
                 eb.Color = Color.Purple;
-                eb.Description = CommandHelp.RaidLeadCommandHelp.ToString();
+                eb.Description = CommandHelp.RaidLeadCommandHelp.Representation;
                 await Context.User.SendMessageAsync(null, false, eb.Build());
             }
             eb.Color = Color.Blue;
-            eb.Description = CommandHelp.BasicCommandHelp.ToString();
+            eb.Description = CommandHelp.BasicCommandHelp.Representation;
             await Context.User.SendMessageAsync(null, false, eb.Build());
         }
 
