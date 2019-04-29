@@ -1,12 +1,12 @@
-﻿using Discord.Commands;
+﻿using System;
+using System.Threading.Tasks;
+using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
 
-namespace Adderbot
+namespace Adderbot.Services
 {
-    class CommandHandler
+    internal class CommandHandler
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
@@ -22,11 +22,10 @@ namespace Adderbot
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
-            var message = messageParam as SocketUserMessage;
-            if (message == null) return;
+            if (!(messageParam is SocketUserMessage message)) return;
 
             // Create a number to track where the prefix ends and the command begins
-            int argPos = 0;
+            var argPos = 0;
 
             var context = new SocketCommandContext(_client, message);
             

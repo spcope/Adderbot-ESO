@@ -58,9 +58,9 @@ namespace Adderbot.Models
         }
 
         [JsonConstructor]
-        public AdderData(List<AdderGuild> gs)
+        public AdderData(List<AdderGuild> guilds)
         {
-            Guilds = gs;
+            Guilds = guilds;
         }
     }
 
@@ -141,6 +141,7 @@ namespace Adderbot.Models
         /// <param name="availableRoles"></param>
         /// <param name="currentPlayers"></param>
         /// <param name="allowedRoles"></param>
+        [JsonConstructor]
         public AdderRaid(string type, ulong lead, ulong messageId, string headline, List<Role> availableRoles,
             List<AdderPlayer> currentPlayers, List<ulong> allowedRoles)
         {
@@ -370,7 +371,7 @@ namespace Adderbot.Models
         public Embed BuildEmbed()
         {
             var eb = new EmbedBuilder();
-            switch (Type)
+            switch (Type.ToLower())
             {
                 case "aa":
                     eb.Color = Color.Magenta;
@@ -410,25 +411,18 @@ namespace Adderbot.Models
         private string GeneratePlayers()
         {
             var players = "";
-            var i = 0;
-            while (true)
+            var added = new List<AdderPlayer>();
+            foreach (var role in AvailableRoles)
             {
-                var role = AvailableRoles[i];
-                if (role > Role.Kh && role < Role.AltDps)
-                    break;
-                var pl = CurrentPlayers.FirstOrDefault(x => x.Role == role);
-                if (pl != null)
-                    players += GenerateRole(role, pl.PlayerId);
-                else
+                var player = CurrentPlayers.FirstOrDefault(x => x.Role == role && !added.Contains(x));
+                if (player == null)
                     players += $"{RoleRepresentations.RoleToRepresentation.GetValueOrDefault(role)}:\n";
-                i++;
+                else
+                {
+                    players += GenerateRole(role, player.PlayerId);
+                    added.Add(player);
+                }
             }
-
-            var flex = CurrentPlayers.Where(x => x.Role == Role.Dps);
-            var range = CurrentPlayers.Where(x => x.Role >= Role.RDps && x.Role <= Role.RDps8);
-            var melee = CurrentPlayers.Where(x => x.Role >= Role.MDps && x.Role <= Role.MDps8);
-            
-            
             
             return players;
         }
@@ -437,27 +431,15 @@ namespace Adderbot.Models
         {
             return $"{RoleRepresentations.RoleToRepresentation.GetValueOrDefault(role)}: <@{uid}>\n";
         }
-
-        private string _generateRole(string role, Role r)
-        {
-            var pl = CurrentPlayers.FirstOrDefault(x => x.Role == r);
-            string user = "";
-            if (pl != null)
-            {
-                user = $"<@{CurrentPlayers.Find(x => x.Role == r).PlayerId}>";
-            }
-
-            return $"{role}: {user}\n";
-        }
     }
 
-    public partial class AdderPlayer
+    public class AdderPlayer
     {
         [JsonProperty("player")] public ulong PlayerId { get; set; }
 
         [JsonProperty("role")] public int RoleId { get; set; }
 
-        [JsonIgnore] public Role Role;
+        [JsonIgnore] public readonly Role Role;
 
         [JsonConstructor]
         public AdderPlayer(ulong pl, int role)
@@ -478,13 +460,13 @@ namespace Adderbot.Models
     public partial class AdderData
     {
         public static AdderData FromJson(string json) =>
-            JsonConvert.DeserializeObject<AdderData>(json, Models.Converter.Settings);
+            JsonConvert.DeserializeObject<AdderData>(json, Converter.Settings);
     }
 
     public static class Serialize
     {
         public static string ToJson(this AdderData self) =>
-            JsonConvert.SerializeObject(self, Models.Converter.Settings);
+            JsonConvert.SerializeObject(self, Converter.Settings);
     }
 
     internal static class Converter

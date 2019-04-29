@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Adderbot.Modules.Base;
 
 namespace Adderbot.Services
 {
@@ -25,7 +26,7 @@ namespace Adderbot.Services
 
         public async Task StartAsync()
         {
-            string discordToken = Environment.GetEnvironmentVariable("Adderbot");
+            var discordToken = Environment.GetEnvironmentVariable("Adderbot");
             if(string.IsNullOrWhiteSpace(discordToken))
             {
                 throw new Exception("Token is empty. Please make sure to add it to your environment vars.");
@@ -40,7 +41,7 @@ namespace Adderbot.Services
             _client.ChannelDestroyed += ValidateChannels;
             _client.LeftGuild += RemoveGuild;
             _client.MessageDeleted += ValidateGuilds;
-            LoadJSON();
+            LoadJson();
 
             await _commandSvc.AddModuleAsync<BaseModule>(null);
             await _commandSvc.AddModuleAsync<TankModule>(null);
@@ -49,9 +50,9 @@ namespace Adderbot.Services
             await _commandSvc.AddModuleAsync<RangedModule>(null);
         }
 
-        private Task RemoveGuild(SocketGuild sg)
+        private static Task RemoveGuild(SocketGuild sg)
         {
-            AdderGuild ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
+            var ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
             if(ag != null)
             {
                 Adderbot.data.Guilds.Remove(ag);
@@ -60,27 +61,24 @@ namespace Adderbot.Services
             return Task.CompletedTask;
         }
 
-        private Task ValidateGuilds(Cacheable<IMessage, ulong> m, ISocketMessageChannel c)
+        private static Task ValidateGuilds(Cacheable<IMessage, ulong> m, ISocketMessageChannel c)
         {
-            AdderGuild ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == ((IGuildChannel)c).GuildId);
-            if(ag != null)
+            var ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == ((IGuildChannel)c).GuildId);
+            var am = ag?.ActiveRaids.FirstOrDefault(x => x.Raid.MessageId == m.Id);
+            if(am != null)
             {
-                var am = ag.ActiveRaids.FirstOrDefault(x => x.Raid.MessageId == m.Id);
-                if(am != null)
-                {
-                    ag.ActiveRaids.Remove(am);
-                }
+                ag.ActiveRaids.Remove(am);
             }
             Adderbot.Save();
             return Task.CompletedTask;
         }
 
-        private Task ValidateChannels(SocketChannel sg)
+        private static Task ValidateChannels(SocketChannel sg)
         {
-            AdderGuild ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == ((SocketGuildChannel) sg).Guild.Id);
+            var ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == ((SocketGuildChannel) sg).Guild.Id);
             if (ag != null)
             {
-                List<AdderChannel> tbd = new List<AdderChannel>();
+                var tbd = new List<AdderChannel>();
                 foreach (var a in ag.ActiveRaids)
                     if (sg.Id == a.ChannelId)
                         tbd.Add(a);
@@ -91,16 +89,16 @@ namespace Adderbot.Services
             return Task.CompletedTask;
         }
 
-        private async Task ValidateGuilds(SocketGuild sg)
+        private static async Task ValidateGuilds(SocketGuild sg)
         {
-            AdderGuild ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
+            var ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
             if (ag == null)
             {
                 Adderbot.data.Guilds.Add(new AdderGuild(sg.Id, 0));
             }
             else
             {
-                List<AdderChannel> tbd = new List<AdderChannel>();
+                var tbd = new List<AdderChannel>();
                 foreach(var g in ag.ActiveRaids)
                 {
                     var c = sg.Channels.FirstOrDefault(x => x.Id == g.ChannelId);
@@ -125,21 +123,18 @@ namespace Adderbot.Services
             Adderbot.Save();
         }
 
-        private Task Log(LogMessage msg)
+        private static Task Log(LogMessage msg)
         {
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
         }
 
-        private void LoadJSON()
+        private static void LoadJson()
         {
             try
             {
-                StreamReader sr = new StreamReader($@"C:\Adderbot\adderbot.json");
-                if (!sr.EndOfStream)
-                    Adderbot.data = AdderData.FromJson(sr.ReadToEnd());
-                else
-                    Adderbot.data = new AdderData();
+                var reader = new StreamReader(@"C:\Adderbot\adderbot.json");
+                Adderbot.data = !reader.EndOfStream ? AdderData.FromJson(reader.ReadToEnd()) : new AdderData();
             }
             catch (FileNotFoundException)
             {

@@ -11,14 +11,14 @@ using System;
 namespace Adderbot
 {
 
-    public class Adderbot
+    public static class Adderbot
     {
         public static SocketRole trialLead = null;
         public static AdderData data;
 
-        public async Task StartAsync()
+        public static async Task StartAsync()
         {
-            IServiceCollection services = new ServiceCollection()
+            var services = new ServiceCollection()
                 .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
                 {
                     LogLevel = LogSeverity.Verbose,
@@ -34,7 +34,7 @@ namespace Adderbot
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<StartupService>();
 
-            ServiceProvider serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider();
 
             await serviceProvider.GetRequiredService<StartupService>().StartAsync();
 
@@ -45,7 +45,7 @@ namespace Adderbot
 
         public static void Save()
         {
-            File.WriteAllLines($@"C:\Adderbot\adderbot.json", new string[] { data.ToJson() });
+            File.WriteAllLines(@"C:\Adderbot\adderbot.json", new [] { data.ToJson() });
         }
     }
 }
