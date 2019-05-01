@@ -23,23 +23,7 @@ namespace Adderbot.Models
         Kh,
         Dps,
         RDps,
-        RDps1,
-        RDps2,
-        RDps3,
-        RDps4,
-        RDps5,
-        RDps6,
-        RDps7,
-        RDps8,
         MDps,
-        MDps1,
-        MDps2,
-        MDps3,
-        MDps4,
-        MDps5,
-        MDps6,
-        MDps7,
-        MDps8,
         AltDps,
         AltMDps,
         AltRDps,
@@ -197,8 +181,8 @@ namespace Adderbot.Models
 
             AvailableRoles.Add(Role.Mt);
             AvailableRoles.Add(Role.Ot);
-
-            var illegalNumDps = (mNum + rNum + fNum) > 8;
+            
+            var expectedDpsNum = 8;
 
             switch (raidType.ToLower())
             {
@@ -236,28 +220,28 @@ namespace Adderbot.Models
 
                 case "cr+0":
                     Type = RaidTypes.Cr0;
-                    illegalNumDps = (mNum + rNum + fNum) > 7;
+                    expectedDpsNum = 7;
                     AvailableRoles.Add(Role.Ot2);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
                 case "cr+1":
                     Type = RaidTypes.Cr1;
-                    illegalNumDps = (mNum + rNum + fNum) > 7;
+                    expectedDpsNum = 7;
                     AvailableRoles.Add(Role.Ot2);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
                 case "cr+2":
                     Type = RaidTypes.Cr2;
-                    illegalNumDps = (mNum + rNum + fNum) > 7;
+                    expectedDpsNum = 7;
                     AvailableRoles.Add(Role.Ot2);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
                 case "cr+3":
                     Type = RaidTypes.Cr3;
-                    illegalNumDps = (mNum + rNum + fNum) > 7;
+                    expectedDpsNum = 7;
                     AvailableRoles.Add(Role.Ot2);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
@@ -265,27 +249,31 @@ namespace Adderbot.Models
                 case "as+0":
                     Type = RaidTypes.As0;
                     AvailableRoles.Add(Role.Gh);
-                    AvailableRoles.Add(Role.Kh);
+                    AvailableRoles.Add(Role.Th);
                     break;
                 case "as+1":
                     Type = RaidTypes.As1;
                     AvailableRoles.Add(Role.Gh);
-                    AvailableRoles.Add(Role.Kh);
+                    AvailableRoles.Add(Role.Th);
                     break;
                 case "as+2":
                     Type = RaidTypes.As2;
                     AvailableRoles.Add(Role.Gh);
-                    AvailableRoles.Add(Role.Kh);
+                    AvailableRoles.Add(Role.Th);
                     break;
 
                 #endregion
+
 
                 default:
                     throw new ArgumentException("Raid type was invalid. Please use the following:\n" +
                                                 RaidTypes.RaidTypeDescriptors);
             }
+            
+            if (fNum == -1)
+                fNum = expectedDpsNum;
 
-            if (illegalNumDps) throw new ArgumentException("Could create a raid with that many dps.");
+            if (mNum + rNum + fNum > expectedDpsNum) throw new ArgumentException("Could create a raid with that many dps.");
 
             Headline = $"Gear up for a {rClass}{Type} on {date} @{time} {timezone}!";
 
@@ -341,9 +329,9 @@ namespace Adderbot.Models
 
         private static bool IsTank(Role role) => Role.T <= role && role <= Role.Ot2;
 
-        private static bool IsRDps(Role role) => Role.RDps <= role && role <= Role.RDps8;
+        private static bool IsRDps(Role role) => Role.RDps == role;
 
-        private static bool IsMDps(Role role) => Role.MDps <= role && role <= Role.MDps8;
+        private static bool IsMDps(Role role) => Role.MDps == role;
 
         private static bool IsAlt(Role role) => Role.AltDps <= role && role <= Role.AltHealer;
 
@@ -423,8 +411,11 @@ namespace Adderbot.Models
                     added.Add(player);
                 }
             }
-            
-            return players;
+
+            players += "\n";
+
+            return CurrentPlayers.Where(x => IsAlt(x.Role)).Aggregate(players,
+                (current, alt) => current + $"{GenerateRole(alt.Role, alt.PlayerId)}");
         }
 
         private static string GenerateRole(Role role, ulong uid)

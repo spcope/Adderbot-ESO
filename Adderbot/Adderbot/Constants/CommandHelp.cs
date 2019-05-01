@@ -57,13 +57,7 @@
             public const string GroupHealer = "`;<gh | grouphealer>` - signs the user up as the group healer";
             public const string Melee = "`;<m | melee | mdps>` - signs the user up as a melee dps.";
 
-            public const string MeleeNumber =
-                "`;m<1 | 2 | 3 | 4>` - signs the user up as a melee dps at the specified position.";
-
             public const string Ranged = "`;<r | ranged | rdps>` - signs the user up as a ranged dps.";
-
-            public const string RangedNumber =
-                "`;r<1 | 2 | 3 | 4>` - signs the user up as a ranged dps at the specified position.";
 
             public const string Remove = "`;remove` - removes the user from the raid in the current channel";
 
@@ -72,8 +66,8 @@
                 $":large_orange_diamond: {OffTank}\n\n:large_blue_diamond: {OffTank2}\n\n" +
                 $":large_orange_diamond: {Healer}\n\n:large_blue_diamond: {HealerNumber}\n\n" +
                 $":large_orange_diamond: {KiteHealer}\n\n:large_blue_diamond: {GroupHealer}\n\n" +
-                $":large_orange_diamond: {Melee}\n\n:large_blue_diamond: {MeleeNumber}\n\n" +
-                $":large_orange_diamond: {Ranged}\n\n:large_blue_diamond: {RangedNumber}\n\n" +
+                $":large_orange_diamond: {Melee}\n\n" +
+                $":large_orange_diamond: {Ranged}\n\n" +
                 $":large_orange_diamond: {Remove}\n\n";
         }
 

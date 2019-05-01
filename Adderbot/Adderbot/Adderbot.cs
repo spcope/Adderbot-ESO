@@ -6,15 +6,24 @@ using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using System.Threading.Tasks;
 using Adderbot.Models;
-using System;
 
 namespace Adderbot
 {
 
     public static class Adderbot
     {
-        public static SocketRole trialLead = null;
-        public static AdderData data;
+        public static bool InDebug = false;
+        public static bool EmotesAvailable = false;
+        public static AdderData Data;
+        public static ulong BotId = 376194715726512138;
+        public static ulong DevId = 110881914956623872;
+        public static string[] EmoteNames = new string[]
+        {
+            "denhealer", "dkhealer", "nbhealer", "plarhealer", "sorchealer",
+            "dentank", "dktank", "nbtank", "plartank", "sorctank",
+            "magblade", "magden", "magdk", "magplar", "magsorc",
+            "stamblade", "stamden", "stamdk", "stamplar", "stamsorc"
+        };
 
         public static async Task StartAsync()
         {
@@ -45,7 +54,7 @@ namespace Adderbot
 
         public static void Save()
         {
-            File.WriteAllLines(@"C:\Adderbot\adderbot.json", new [] { data.ToJson() });
+            File.WriteAllLines(@"C:\Adderbot\adderbot.json", new [] { Data.ToJson() });
         }
     }
 }

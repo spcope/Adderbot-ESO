@@ -52,10 +52,10 @@ namespace Adderbot.Services
 
         private static Task RemoveGuild(SocketGuild sg)
         {
-            var ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
+            var ag = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
             if(ag != null)
             {
-                Adderbot.data.Guilds.Remove(ag);
+                Adderbot.Data.Guilds.Remove(ag);
             }
             Adderbot.Save();
             return Task.CompletedTask;
@@ -63,7 +63,7 @@ namespace Adderbot.Services
 
         private static Task ValidateGuilds(Cacheable<IMessage, ulong> m, ISocketMessageChannel c)
         {
-            var ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == ((IGuildChannel)c).GuildId);
+            var ag = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == ((IGuildChannel)c).GuildId);
             var am = ag?.ActiveRaids.FirstOrDefault(x => x.Raid.MessageId == m.Id);
             if(am != null)
             {
@@ -75,7 +75,7 @@ namespace Adderbot.Services
 
         private static Task ValidateChannels(SocketChannel sg)
         {
-            var ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == ((SocketGuildChannel) sg).Guild.Id);
+            var ag = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == ((SocketGuildChannel) sg).Guild.Id);
             if (ag != null)
             {
                 var tbd = new List<AdderChannel>();
@@ -91,10 +91,10 @@ namespace Adderbot.Services
 
         private static async Task ValidateGuilds(SocketGuild sg)
         {
-            var ag = Adderbot.data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
+            var ag = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
             if (ag == null)
             {
-                Adderbot.data.Guilds.Add(new AdderGuild(sg.Id, 0));
+                Adderbot.Data.Guilds.Add(new AdderGuild(sg.Id, 0));
             }
             else
             {
@@ -134,11 +134,11 @@ namespace Adderbot.Services
             try
             {
                 var reader = new StreamReader(@"C:\Adderbot\adderbot.json");
-                Adderbot.data = !reader.EndOfStream ? AdderData.FromJson(reader.ReadToEnd()) : new AdderData();
+                Adderbot.Data = !reader.EndOfStream ? AdderData.FromJson(reader.ReadToEnd()) : new AdderData();
             }
             catch (FileNotFoundException)
             {
-                Adderbot.data = new AdderData();
+                Adderbot.Data = new AdderData();
             }
             catch (JsonException je)
             {

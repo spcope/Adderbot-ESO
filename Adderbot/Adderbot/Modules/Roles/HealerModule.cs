@@ -50,25 +50,25 @@ namespace Adderbot.Modules.Roles
         [Command("grouphealer")]
         [Summary("Adds a user as a group healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task GroupHealerAsync([Remainder] string user = null) => await GHAsync(user);
+        public async Task GroupHealerAsync([Remainder] string user = null) => await GhAsync(user);
 
 
         [Command("gh")]
         [Summary("Adds a user as a group healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task GHAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Gh, user);
+        public async Task GhAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Gh, user);
         #endregion
 
         #region KH
         [Command("kitehealer")]
         [Summary("Adds a user as a kite healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task KiteHealerAsync([Remainder] string user = null) => await KHAsync(user);
+        public async Task KiteHealerAsync([Remainder] string user = null) => await KhAsync(user);
 
         [Command("kh")]
         [Summary("Adds a user as a kite healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task KHAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Kh, user);
+        public async Task KhAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Kh, user);
         #endregion
         #endregion
     }
