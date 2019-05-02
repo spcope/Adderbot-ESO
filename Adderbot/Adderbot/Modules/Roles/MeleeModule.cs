@@ -38,7 +38,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MeleeAsync([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, Role.MDps, user);
+            await BaseModule.UpdateRoster(Context, Role.MDps);
         }
         #endregion
     }

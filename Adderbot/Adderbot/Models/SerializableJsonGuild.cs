@@ -51,6 +51,8 @@ namespace Adderbot.Models
     public class AdderGuild
     {
         [JsonProperty("GuildId")] public ulong GuildId { get; set; }
+        
+        [JsonProperty("EmotesAvailable")] public bool EmotesAvailable { get; set; }
 
         [JsonProperty("TrialLead")] public ulong Lead { get; set; }
 
@@ -71,9 +73,10 @@ namespace Adderbot.Models
         }
 
         [JsonConstructor]
-        public AdderGuild(ulong gid, ulong lead, List<AdderChannel> ars)
+        public AdderGuild(ulong gid, bool emotesAvailable, ulong lead, List<AdderChannel> ars)
         {
             GuildId = gid;
+            EmotesAvailable = emotesAvailable;
             Lead = lead;
             ActiveRaids = ars;
         }
@@ -428,14 +431,17 @@ namespace Adderbot.Models
     {
         [JsonProperty("player")] public ulong PlayerId { get; set; }
 
+        [JsonProperty("emote")] public string Emote { get; set; }
+
         [JsonProperty("role")] public int RoleId { get; set; }
 
         [JsonIgnore] public readonly Role Role;
 
         [JsonConstructor]
-        public AdderPlayer(ulong pl, int role)
+        public AdderPlayer(ulong pl, string emote, int role)
         {
             PlayerId = pl;
+            Emote = emote;
             RoleId = role;
             Role = (Role) role;
         }

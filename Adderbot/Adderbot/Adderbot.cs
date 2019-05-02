@@ -13,7 +13,6 @@ namespace Adderbot
     public static class Adderbot
     {
         public static bool InDebug = false;
-        public static bool EmotesAvailable = false;
         public static AdderData Data;
         public static ulong BotId = 376194715726512138;
         public static ulong DevId = 110881914956623872;

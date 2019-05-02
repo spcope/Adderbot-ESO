@@ -38,7 +38,7 @@ namespace Adderbot.Modules.Roles
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task RangedAsync([Remainder] string user = null)
         {
-            await BaseModule.UpdateRoster(Context, Role.RDps, user);
+            await BaseModule.UpdateRoster(Context, Role.RDps);
         }
         #endregion
     }

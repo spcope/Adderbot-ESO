@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Adderbot.Constants;
+using Adderbot.Helpers;
 using Adderbot.Models;
 using Discord;
 using Discord.Commands;
@@ -14,12 +14,43 @@ namespace Adderbot.Modules.Base
 {
     internal class BaseModule : ModuleBase<SocketCommandContext>
     {
+        private async Task<AdderGuild> CheckGuildValid(ulong guildId)
+        {
+            var guild = GuildHelper.GetGuildById(guildId);
+            if (guild != null) return guild;
+            await Context.User.SendMessageAsync(MessageText.Error.InvalidGuild);
+            return null;
+        }
+
+        private async Task<Emote> CheckEmoteValid(string emote)
+        {
+            if (emote == null) return null;
+            if (!Emote.TryParse(emote, out var parsedEmote))
+            {
+                await Context.User.SendMessageAsync("Emote not available. You'll still be added to the raid, but without the emote");
+            }
+
+            if (Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)).Any(guildEmote => guildEmote.Id == parsedEmote.Id))
+            {
+                return parsedEmote;
+            }
+            
+            await Context.User.SendMessageAsync("Emote not available. You'll still be added to the raid, but without the emote");
+
+            return parsedEmote;
+        }
+
         [Command("check-emotes")]
         [Summary("Checks which emotes are available")]
         [RequireBotPermission(ChannelPermission.SendMessages)]
         public async Task CheckEmotes()
         {
-            await Task.CompletedTask;
+            var guild = CheckGuildValid(Context.Guild.Id).Result;
+            if (guild != null && guild.EmotesAvailable)
+            {
+                await ReplyAsync(
+                    $"Available Emotes\n{Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)).Aggregate("", (current, emote) => current + $"{emote} - {emote.Name}\n")}");
+            }
         }
 
         [Command("add-emotes")]
@@ -31,13 +62,17 @@ namespace Adderbot.Modules.Base
         {
             try
             {
-                var path = Directory.GetCurrentDirectory();
+                var guild = CheckGuildValid(Context.Guild.Id).Result;
+                if (guild != null)
+                {
+                    var path = Directory.GetCurrentDirectory();
 
-                foreach (var emote in Adderbot.EmoteNames)
-                    await Context.Guild.CreateEmoteAsync(emote,
-                        new Image($@"{path}\Media\{emote}.png"));
+                    foreach (var emote in Adderbot.EmoteNames)
+                        await Context.Guild.CreateEmoteAsync(emote,
+                            new Image($@"{path}\Media\{emote}.png"));
 
-                Adderbot.EmotesAvailable = true;
+                    guild.EmotesAvailable = true;
+                }
             }
             catch (Exception)
             {
@@ -56,10 +91,14 @@ namespace Adderbot.Modules.Base
         {
             try
             {
-                foreach (var emote in Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)))
-                    await Context.Guild.DeleteEmoteAsync(emote);
+                var guild = CheckGuildValid(Context.Guild.Id).Result;
+                if (guild != null)
+                {
+                    foreach (var emote in Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)))
+                        await Context.Guild.DeleteEmoteAsync(emote);
 
-                Adderbot.EmotesAvailable = false;
+                    guild.EmotesAvailable = false;
+                }
             }
             catch (Exception)
             {
@@ -520,9 +559,18 @@ namespace Adderbot.Modules.Base
         [Command("raid-add")]
         [Summary("Adds user as role (override)")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task RaidAddAsync(string user, string role)
+        public async Task RaidAddAsync(string user, string role, [Remainder] string emote = null)
         {
             var parsedUser = ulong.Parse(user.Trim().Substring(2, user.Length - 3));
+
+            Emote parsedEmote;
+            var emoteCanBeAdded = false;
+            if (emote != null)
+            {
+                parsedEmote = CheckEmoteValid(emote).Result;
+                if (parsedEmote != null)
+                    emoteCanBeAdded = true;
+            }
 
             var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == Context.Guild.Id);
             if (guild == null)
@@ -691,7 +739,7 @@ namespace Adderbot.Modules.Base
             await Context.User.SendMessageAsync(null, false, embedBuilder.Build());
         }
 
-        public static async Task UpdateRoster(SocketCommandContext scc, Role role, string user)
+        public static async Task UpdateRoster(SocketCommandContext scc, Role role)
         {
             var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == scc.Guild.Id);
             if (guild == null)
@@ -746,7 +794,7 @@ namespace Adderbot.Modules.Base
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MeleeAsync([Remainder] string user = null)
         {
-            await UpdateRoster(Context, Role.Dps, user);
+            await UpdateRoster(Context, Role.Dps);
         }
     }
 }

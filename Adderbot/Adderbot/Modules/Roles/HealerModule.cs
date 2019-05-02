@@ -18,7 +18,7 @@ namespace Adderbot.Modules.Roles
         [Command("healer")]
         [Summary("Adds a user as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task HealerAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H, user);
+        public async Task HealerAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H);
         #endregion
 
         #region Healer Specifics
@@ -31,7 +31,7 @@ namespace Adderbot.Modules.Roles
         [Command("h1")]
         [Summary("Adds user as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task H1Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H1, user);
+        public async Task H1Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H1);
         #endregion
 
         #region H2
@@ -43,7 +43,7 @@ namespace Adderbot.Modules.Roles
         [Command("h2")]
         [Summary("Adds user as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task H2Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H2, user);
+        public async Task H2Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H2);
         #endregion
         
         #region GH
@@ -56,7 +56,7 @@ namespace Adderbot.Modules.Roles
         [Command("gh")]
         [Summary("Adds a user as a group healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task GhAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Gh, user);
+        public async Task GhAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Gh);
         #endregion
 
         #region KH
@@ -68,7 +68,7 @@ namespace Adderbot.Modules.Roles
         [Command("kh")]
         [Summary("Adds a user as a kite healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task KhAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Kh, user);
+        public async Task KhAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Kh);
         #endregion
         #endregion
     }
