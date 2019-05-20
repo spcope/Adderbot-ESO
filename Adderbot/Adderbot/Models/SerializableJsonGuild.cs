@@ -297,11 +297,11 @@ namespace Adderbot.Models
             }
         }
 
-        public void AddPlayer(ulong uid, Role role)
+        public void AddPlayer(ulong uid, Role role, Emote emote)
         {
             if (IsAlt(role))
             {
-                CurrentPlayers.Add(new AdderPlayer(uid, role));
+                CurrentPlayers.Add(new AdderPlayer(uid, role, emote));
                 return;
             }
 
@@ -311,20 +311,20 @@ namespace Adderbot.Models
 
             if (count > CurrentPlayers.Count(x => x.Role == role))
             {
-                CurrentPlayers.Add(new AdderPlayer(uid, role));
+                CurrentPlayers.Add(new AdderPlayer(uid, role, emote));
             }
             else
             {
                 if (IsHealer(role))
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltHealer));
+                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltHealer, emote));
                 else if (IsTank(role))
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltTank));
+                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltTank, emote));
                 else if (IsRDps(role))
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltRDps));
+                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltRDps, emote));
                 else if (IsMDps(role))
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltMDps));
+                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltMDps, emote));
                 else
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltDps));
+                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltDps, emote));
             }
         }
 
@@ -410,7 +410,7 @@ namespace Adderbot.Models
                     players += $"{RoleRepresentations.RoleToRepresentation.GetValueOrDefault(role)}:\n";
                 else
                 {
-                    players += GenerateRole(role, player.PlayerId);
+                    players += GenerateRole(player);
                     added.Add(player);
                 }
             }
@@ -418,12 +418,12 @@ namespace Adderbot.Models
             players += "\n";
 
             return CurrentPlayers.Where(x => IsAlt(x.Role)).Aggregate(players,
-                (current, alt) => current + $"{GenerateRole(alt.Role, alt.PlayerId)}");
+                (current, alt) => current + $"{GenerateRole(alt)}");
         }
 
-        private static string GenerateRole(Role role, ulong uid)
+        private static string GenerateRole(AdderPlayer player)
         {
-            return $"{RoleRepresentations.RoleToRepresentation.GetValueOrDefault(role)}: <@{uid}>\n";
+            return $"{RoleRepresentations.RoleToRepresentation.GetValueOrDefault(player.Role)}: <@{player.PlayerId}> {player.Emote}\n";
         }
     }
 
@@ -437,20 +437,25 @@ namespace Adderbot.Models
 
         [JsonIgnore] public readonly Role Role;
 
+        [JsonIgnore] public readonly Emote EmoteObj;
+
         [JsonConstructor]
         public AdderPlayer(ulong pl, string emote, int role)
         {
             PlayerId = pl;
             Emote = emote;
+            EmoteObj = Discord.Emote.Parse(emote);
             RoleId = role;
             Role = (Role) role;
         }
 
-        public AdderPlayer(ulong pl, Role r)
+        public AdderPlayer(ulong pl, Role r, Emote emote)
         {
             PlayerId = pl;
             RoleId = r.GetHashCode();
             Role = r;
+            EmoteObj = emote;
+            Emote = emote?.ToString();
         }
     }
 

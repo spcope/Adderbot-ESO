@@ -22,20 +22,20 @@ namespace Adderbot.Modules.Base
             return null;
         }
 
-        private async Task<Emote> CheckEmoteValid(string emote)
+        private static async Task<Emote> CheckEmoteValid(string emote, SocketCommandContext scc)
         {
             if (emote == null) return null;
             if (!Emote.TryParse(emote, out var parsedEmote))
             {
-                await Context.User.SendMessageAsync("Emote not available. You'll still be added to the raid, but without the emote");
+                await scc.User.SendMessageAsync("Emote not available. You'll still be added to the raid, but without the emote");
             }
 
-            if (Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)).Any(guildEmote => guildEmote.Id == parsedEmote.Id))
+            if (scc.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)).Any(guildEmote => guildEmote.Id == parsedEmote.Id))
             {
                 return parsedEmote;
             }
             
-            await Context.User.SendMessageAsync("Emote not available. You'll still be added to the raid, but without the emote");
+            await scc.User.SendMessageAsync("Emote not available. You'll still be added to the raid, but without the emote");
 
             return parsedEmote;
         }
@@ -563,15 +563,6 @@ namespace Adderbot.Modules.Base
         {
             var parsedUser = ulong.Parse(user.Trim().Substring(2, user.Length - 3));
 
-            Emote parsedEmote;
-            var emoteCanBeAdded = false;
-            if (emote != null)
-            {
-                parsedEmote = CheckEmoteValid(emote).Result;
-                if (parsedEmote != null)
-                    emoteCanBeAdded = true;
-            }
-
             var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == Context.Guild.Id);
             if (guild == null)
             {
@@ -654,7 +645,7 @@ namespace Adderbot.Modules.Base
 
                                 try
                                 {
-                                    adderChannel.Raid.AddPlayer(parsedUser, parsedRole);
+                                    adderChannel.Raid.AddPlayer(parsedUser, parsedRole, CheckEmoteValid(emote, Context).Result);
                                     await ((IUserMessage) await Context.Channel.GetMessageAsync(adderChannel.Raid
                                             .MessageId))
                                         .ModifyAsync(x =>
@@ -739,7 +730,7 @@ namespace Adderbot.Modules.Base
             await Context.User.SendMessageAsync(null, false, embedBuilder.Build());
         }
 
-        public static async Task UpdateRoster(SocketCommandContext scc, Role role)
+        public static async Task UpdateRoster(SocketCommandContext scc, Role role, string emote)
         {
             var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == scc.Guild.Id);
             if (guild == null)
@@ -772,7 +763,7 @@ namespace Adderbot.Modules.Base
                     {
                         try
                         {
-                            adderChannel.Raid.AddPlayer(scc.User.Id, role);
+                            adderChannel.Raid.AddPlayer(scc.User.Id, role, CheckEmoteValid(emote, scc).Result);
                             await ((IUserMessage) await scc.Channel.GetMessageAsync(adderChannel.Raid.MessageId))
                                 .ModifyAsync(x =>
                                 {
@@ -784,6 +775,10 @@ namespace Adderbot.Modules.Base
                         {
                             await scc.User.SendMessageAsync(ae.Message);
                         }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
                     }
                 }
             }
@@ -792,9 +787,9 @@ namespace Adderbot.Modules.Base
         [Command("dps")]
         [Summary("Adds user as a dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MeleeAsync([Remainder] string user = null)
+        public async Task DpsAsync([Remainder] string emote = null)
         {
-            await UpdateRoster(Context, Role.Dps);
+            await UpdateRoster(Context, Role.Dps, emote);
         }
     }
 }

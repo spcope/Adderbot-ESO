@@ -10,35 +10,35 @@ namespace Adderbot.Modules.Roles
     {
         #region Generics
         [Command("r")]
-        [Summary("Adds user as a ranged dps")]
+        [Summary("Adds emote as a ranged dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MAsync([Remainder] string user = null)
+        public async Task MAsync([Remainder] string emote = null)
         {
-            await RangedAsync(user);
+            await RangedAsync(emote);
         }
 
         [Command("rdps")]
-        [Summary("Adds user as a ranged dps")]
+        [Summary("Adds emote as a ranged dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task RdpsAsync([Remainder] string user = null)
+        public async Task RdpsAsync([Remainder] string emote = null)
         {
-            await RangedAsync(user);
+            await RangedAsync(emote);
         }
 
         [Command("range")]
-        [Summary("Adds user as a ranged dps")]
+        [Summary("Adds emote as a ranged dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task StamAsync([Remainder] string user = null)
+        public async Task StamAsync([Remainder] string emote = null)
         {
-            await RangedAsync(user);
+            await RangedAsync(emote);
         }
 
         [Command("ranged")]
-        [Summary("Adds user as a ranged dps")]
+        [Summary("Adds emote as a ranged dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task RangedAsync([Remainder] string user = null)
+        public async Task RangedAsync([Remainder] string emote = null)
         {
-            await BaseModule.UpdateRoster(Context, Role.RDps);
+            await BaseModule.UpdateRoster(Context, Role.RDps, emote);
         }
         #endregion
     }

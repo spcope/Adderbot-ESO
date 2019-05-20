@@ -10,35 +10,35 @@ namespace Adderbot.Modules.Roles
     {
         #region Generics
         [Command("m")]
-        [Summary("Adds user as a melee dps")]
+        [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MAsync([Remainder] string user = null)
+        public async Task MAsync([Remainder] string emote = null)
         {
-            await MeleeAsync(user);
+            await MeleeAsync(emote);
         }
 
         [Command("mdps")]
-        [Summary("Adds user as a melee dps")]
+        [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MdpsAsync([Remainder] string user = null)
+        public async Task MdpsAsync([Remainder] string emote = null)
         {
-            await MeleeAsync(user);
+            await MeleeAsync(emote);
         }
 
         [Command("stam")]
-        [Summary("Adds user as a melee dps")]
+        [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task StamAsync([Remainder] string user = null)
+        public async Task StamAsync([Remainder] string emote = null)
         {
-            await MeleeAsync(user);
+            await MeleeAsync(emote);
         }
 
         [Command("melee")]
-        [Summary("Adds user as a melee dps")]
+        [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MeleeAsync([Remainder] string user = null)
+        public async Task MeleeAsync([Remainder] string emote = null)
         {
-            await BaseModule.UpdateRoster(Context, Role.MDps);
+            await BaseModule.UpdateRoster(Context, Role.MDps, emote);
         }
         #endregion
     }

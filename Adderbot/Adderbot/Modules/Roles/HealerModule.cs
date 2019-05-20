@@ -10,65 +10,65 @@ namespace Adderbot.Modules.Roles
     {
         #region Generics
         [Command("h")]
-        [Summary("Adds a user as a healer")]
+        [Summary("Adds a emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task HAsync([Remainder] string user = null) => await HealerAsync(user);
+        public async Task HAsync([Remainder] string emote = null) => await HealerAsync(emote);
 
 
         [Command("healer")]
-        [Summary("Adds a user as a healer")]
+        [Summary("Adds a emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task HealerAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H);
+        public async Task HealerAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.H, emote);
         #endregion
 
         #region Healer Specifics
         #region H1
         [Command("healer1")]
-        [Summary("Adds user as a healer")]
+        [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task Healer1Async([Remainder] string user = null) => await H1Async(user);
+        public async Task Healer1Async([Remainder] string emote = null) => await H1Async(emote);
 
         [Command("h1")]
-        [Summary("Adds user as a healer")]
+        [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task H1Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H1);
+        public async Task H1Async([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.H1, emote);
         #endregion
 
         #region H2
         [Command("healer2")]
-        [Summary("Adds user as a healer")]
+        [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task Healer2Async([Remainder] string user = null) => await H2Async(user);
+        public async Task Healer2Async([Remainder] string emote = null) => await H2Async(emote);
 
         [Command("h2")]
-        [Summary("Adds user as a healer")]
+        [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task H2Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.H2);
+        public async Task H2Async([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.H2, emote);
         #endregion
         
         #region GH
         [Command("grouphealer")]
-        [Summary("Adds a user as a group healer")]
+        [Summary("Adds a emote as a group healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task GroupHealerAsync([Remainder] string user = null) => await GhAsync(user);
+        public async Task GroupHealerAsync([Remainder] string emote = null) => await GhAsync(emote);
 
 
         [Command("gh")]
-        [Summary("Adds a user as a group healer")]
+        [Summary("Adds a emote as a group healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task GhAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Gh);
+        public async Task GhAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Gh, emote);
         #endregion
 
         #region KH
         [Command("kitehealer")]
-        [Summary("Adds a user as a kite healer")]
+        [Summary("Adds a emote as a kite healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task KiteHealerAsync([Remainder] string user = null) => await KhAsync(user);
+        public async Task KiteHealerAsync([Remainder] string emote = null) => await KhAsync(emote);
 
         [Command("kh")]
-        [Summary("Adds a user as a kite healer")]
+        [Summary("Adds a emote as a kite healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task KhAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Kh);
+        public async Task KhAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Kh, emote);
         #endregion
         #endregion
     }

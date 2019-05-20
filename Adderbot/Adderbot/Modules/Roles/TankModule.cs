@@ -10,49 +10,49 @@ namespace Adderbot.Modules.Roles
     {
         #region Generics
         [Command("t")]
-        [Summary("Adds a user as a tank")]
+        [Summary("Adds a emote as a tank")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task TankAbbrevAsync([Remainder] string user = null) => await TankAsync(user);
+        public async Task TankAbbrevAsync([Remainder] string emote = null) => await TankAsync(emote);
 
         [Command("tank")]
-        [Summary("Adds a user as a tank.")]
+        [Summary("Adds a emote as a tank.")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task TankAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.T);
+        public async Task TankAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.T, emote);
         #endregion
 
         #region Tank Specifics
         #region MT
         [Command("maintank")]
-        [Summary("Adds a user as a MT")]
+        [Summary("Adds a emote as a MT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MainTankAsync([Remainder] string user = null) => await MtAsync(user);
+        public async Task MainTankAsync([Remainder] string emote = null) => await MtAsync(emote);
 
         [Command("mt")]
-        [Summary("Adds a user as a MT")]
+        [Summary("Adds a emote as a MT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MtAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Mt);
+        public async Task MtAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Mt, emote);
         #endregion
 
         #region OT
         [Command("offtank")]
-        [Summary("Adds a user as an OT")]
+        [Summary("Adds a emote as an OT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OffTankAsync([Remainder] string user = null) => await OtAsync(user);
+        public async Task OffTankAsync([Remainder] string emote = null) => await OtAsync(emote);
 
         [Command("ot")]
-        [Summary("Adds a user as an OT")]
+        [Summary("Adds a emote as an OT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OtAsync([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Ot);
+        public async Task OtAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Ot, emote);
 
         [Command("offtank2")]
-        [Summary("Adds a user as an OT2")]
+        [Summary("Adds a emote as an OT2")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OffTank2Async([Remainder] string user = null) => await Ot2Async(user);
+        public async Task OffTank2Async([Remainder] string emote = null) => await Ot2Async(emote);
 
         [Command("ot2")]
-        [Summary("Adds a user as an OT2")]
+        [Summary("Adds a emote as an OT2")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task Ot2Async([Remainder] string user = null) => await BaseModule.UpdateRoster(Context, Role.Ot2);
+        public async Task Ot2Async([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Ot2, emote);
         #endregion
         #endregion
     }

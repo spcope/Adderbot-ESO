@@ -4,7 +4,7 @@ namespace Adderbot.Constants
     {
         public static class Error
         {
-            public static string InvalidGuild = "Somehow the guild could not be added, contact the developers for help";
+            public const string InvalidGuild = "Somehow the guild could not be added, contact the developers for help";
         }
     }
 }
