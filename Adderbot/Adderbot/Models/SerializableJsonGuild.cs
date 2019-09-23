@@ -222,8 +222,8 @@ namespace Adderbot.Models
                 case "ss":
                     Type = RaidTypes.Ss;
                     AvailableRoles.Add(Role.Ot);
-                    AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Ch);
+                    AvailableRoles.Add(Role.Gh);
                     break;
 
                 #endregion
