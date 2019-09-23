@@ -540,13 +540,13 @@ namespace Adderbot.Modules.Base
                                 await Context.Guild.GetUser(parsedUser)
                                     .SendMessageAsync(
                                         $"You have been removed from the raid in {Context.Channel.Name}.");
-                            await ((IUserMessage) await Context.Channel.GetMessageAsync(ac.Raid.MessageId))
-                                .ModifyAsync(x =>
-                                {
-                                    x.Embed = ac.Raid.BuildEmbed();
-                                    x.Content = ac.Raid.BuildAllowedRoles();
-                                });
                         }
+                        await ((IUserMessage) await Context.Channel.GetMessageAsync(ac.Raid.MessageId))
+                            .ModifyAsync(x =>
+                            {
+                                x.Embed = ac.Raid.BuildEmbed();
+                                x.Content = ac.Raid.BuildAllowedRoles();
+                            });
                     }
                     else
                     {
@@ -600,9 +600,6 @@ namespace Adderbot.Modules.Base
                                         break;
                                     case "ot":
                                         parsedRole = Role.Ot;
-                                        break;
-                                    case "ot2":
-                                        parsedRole = Role.Ot2;
                                         break;
 
                                     #endregion

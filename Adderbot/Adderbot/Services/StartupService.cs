@@ -35,7 +35,7 @@ namespace Adderbot.Services
             _client.Log += Log;
             await _client.LoginAsync(TokenType.Bot, discordToken);
             await _client.StartAsync();
-            await _client.SetGameAsync(";help for a list of commands");
+            await _client.SetGameAsync(";help for commands");
             _client.GuildAvailable += ValidateGuilds;
             _client.JoinedGuild += ValidateGuilds;
             _client.ChannelDestroyed += ValidateChannels;

@@ -14,6 +14,7 @@
         public const string As0 = "AS+0";
         public const string As1 = "AS+1";
         public const string As2 = "AS+2";
+        public const string Ss = "SS";
         public const string Invalid = "Invalid";
 
         public const string RaidTypeDescriptors = "Aetherian Archive: `aa`\n" +

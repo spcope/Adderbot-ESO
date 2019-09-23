@@ -14,10 +14,10 @@ namespace Adderbot.Models
         T,
         Mt,
         Ot,
-        Ot2,
         H,
         H1,
         H2,
+        Ch,
         Gh,
         Th,
         Kh,
@@ -151,16 +151,16 @@ namespace Adderbot.Models
         /// <param name="timezone"></param>
         /// <param name="lead"></param>
         /// <param name="fNum"></param>
-        /// <param name="ars"></param>
+        /// <param name="allowedRoles"></param>
         /// <param name="mNum"></param>
         /// <param name="rNum"></param>
         public AdderRaid(string raidClass, string raidType, string date, string time,
-            string timezone, ulong lead, int mNum, int rNum, int fNum, List<ulong> ars)
+            string timezone, ulong lead, int mNum, int rNum, int fNum, List<ulong> allowedRoles)
         {
             Lead = lead;
             MessageId = 0;
             CurrentPlayers = new List<AdderPlayer>();
-            AllowedRoles = ars;
+            AllowedRoles = allowedRoles;
             AvailableRoles = new List<Role>();
 
             string rClass;
@@ -181,9 +181,7 @@ namespace Adderbot.Models
                     break;
             }
 
-
             AvailableRoles.Add(Role.Mt);
-            AvailableRoles.Add(Role.Ot);
             
             var expectedDpsNum = 8;
 
@@ -193,28 +191,39 @@ namespace Adderbot.Models
 
                 case "aa":
                     Type = RaidTypes.Aa;
+                    expectedDpsNum = 9;
                     AvailableRoles.Add(Role.H1);
                     AvailableRoles.Add(Role.H2);
                     break;
                 case "hrc":
                     Type = RaidTypes.Hrc;
+                    expectedDpsNum = 9;
                     AvailableRoles.Add(Role.H1);
                     AvailableRoles.Add(Role.H2);
                     break;
                 case "so":
                     Type = RaidTypes.So;
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.H1);
                     AvailableRoles.Add(Role.H2);
                     break;
                 case "mol":
                     Type = RaidTypes.Mol;
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.H1);
                     AvailableRoles.Add(Role.H2);
                     break;
                 case "hof":
                     Type = RaidTypes.Hof;
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.H1);
                     AvailableRoles.Add(Role.H2);
+                    break;
+                case "ss":
+                    Type = RaidTypes.Ss;
+                    AvailableRoles.Add(Role.Ot);
+                    AvailableRoles.Add(Role.Gh);
+                    AvailableRoles.Add(Role.Ch);
                     break;
 
                 #endregion
@@ -224,43 +233,50 @@ namespace Adderbot.Models
                 case "cr+0":
                     Type = RaidTypes.Cr0;
                     expectedDpsNum = 7;
-                    AvailableRoles.Add(Role.Ot2);
+                    AvailableRoles.Add(Role.Ot);
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
                 case "cr+1":
                     Type = RaidTypes.Cr1;
                     expectedDpsNum = 7;
-                    AvailableRoles.Add(Role.Ot2);
+                    AvailableRoles.Add(Role.Ot);
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
                 case "cr+2":
                     Type = RaidTypes.Cr2;
                     expectedDpsNum = 7;
-                    AvailableRoles.Add(Role.Ot2);
+                    AvailableRoles.Add(Role.Ot);
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
                 case "cr+3":
                     Type = RaidTypes.Cr3;
                     expectedDpsNum = 7;
-                    AvailableRoles.Add(Role.Ot2);
+                    AvailableRoles.Add(Role.Ot);
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
                 case "as+0":
                     Type = RaidTypes.As0;
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Th);
                     break;
                 case "as+1":
                     Type = RaidTypes.As1;
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Th);
                     break;
                 case "as+2":
                     Type = RaidTypes.As2;
+                    AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Th);
                     break;
@@ -304,39 +320,76 @@ namespace Adderbot.Models
                 CurrentPlayers.Add(new AdderPlayer(uid, role, emote));
                 return;
             }
+            
+            if (IsInvalid(role))
+                throw new ArgumentException("The raid you are attempting to sign up for does not allow that role.");
+            
+            switch (role)
+            {
+                case Role.H:
+                    if (CheckRoleAvailable(Role.H1))
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.H1, emote));
+                    else if (CheckRoleAvailable(Role.H2))
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.H2, emote));
+                    else if (CheckRoleAvailable(Role.Ch))
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.Ch, emote));
+                    else if (CheckRoleAvailable(Role.Kh))
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.Kh, emote));
+                    else if (CheckRoleAvailable(Role.Gh))
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.Gh, emote));
+                    else
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.AltHealer, emote));
+                    break;
+                case Role.T:
+                    if (CheckRoleAvailable(Role.Mt))
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.Mt, emote));
+                    else if (CheckRoleAvailable(Role.Ot))
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.Ot, emote));
+                    else
+                        CurrentPlayers.Add(new AdderPlayer(uid, Role.AltTank, emote));
+                    break;
+                default:
+                    if (CheckRoleAvailable(role))
+                    {
+                        CurrentPlayers.Add(new AdderPlayer(uid, role, emote));
+                    }
+                    else
+                    {
+                        if (IsHealer(role))
+                            CurrentPlayers.Add(new AdderPlayer(uid, Role.AltHealer, emote));
+                        else if (IsTank(role))
+                            CurrentPlayers.Add(new AdderPlayer(uid, Role.AltTank, emote));
+                        else if (IsRDps(role))
+                            CurrentPlayers.Add(new AdderPlayer(uid, Role.AltRDps, emote));
+                        else if (IsMDps(role))
+                            CurrentPlayers.Add(new AdderPlayer(uid, Role.AltMDps, emote));
+                        else
+                            CurrentPlayers.Add(new AdderPlayer(uid, Role.AltDps, emote));
+                    }
+                    break;
+            }
+        }
 
+        private bool CheckRoleAvailable(Role role)
+        {
             var count = AvailableRoles.Count(x => x == role);
 
             if (count <= 0) throw new ArgumentException("This raid does not allow the requested role");
 
-            if (count > CurrentPlayers.Count(x => x.Role == role))
-            {
-                CurrentPlayers.Add(new AdderPlayer(uid, role, emote));
-            }
-            else
-            {
-                if (IsHealer(role))
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltHealer, emote));
-                else if (IsTank(role))
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltTank, emote));
-                else if (IsRDps(role))
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltRDps, emote));
-                else if (IsMDps(role))
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltMDps, emote));
-                else
-                    CurrentPlayers.Add(new AdderPlayer(uid, Role.AltDps, emote));
-            }
+            return count > CurrentPlayers.Count(x => x.Role == role);
         }
 
         private static bool IsHealer(Role role) => Role.H <= role && role <= Role.Kh;
 
-        private static bool IsTank(Role role) => Role.T <= role && role <= Role.Ot2;
+        private static bool IsTank(Role role) => Role.T <= role && role <= Role.Ot;
 
         private static bool IsRDps(Role role) => Role.RDps == role;
 
         private static bool IsMDps(Role role) => Role.MDps == role;
 
         private static bool IsAlt(Role role) => Role.AltDps <= role && role <= Role.AltHealer;
+
+        private static bool IsInvalid(Role role) => Role.InvalidRole == role;
 
         private string Build()
         {
@@ -389,6 +442,9 @@ namespace Adderbot.Models
                 case "cr+2":
                 case "cr+3":
                     eb.Color = Color.DarkPurple;
+                    break;
+                case "ss":
+                    eb.Color = Color.Teal;
                     break;
                 default:
                     throw new ArgumentException("Invalid raid type");
@@ -444,7 +500,7 @@ namespace Adderbot.Models
         {
             PlayerId = pl;
             Emote = emote;
-            EmoteObj = Discord.Emote.Parse(emote);
+            EmoteObj = emote != null ? Discord.Emote.Parse(emote) : null;
             RoleId = role;
             Role = (Role) role;
         }

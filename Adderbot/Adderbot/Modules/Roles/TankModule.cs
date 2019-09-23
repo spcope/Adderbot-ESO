@@ -43,16 +43,6 @@ namespace Adderbot.Modules.Roles
         [Summary("Adds a emote as an OT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task OtAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Ot, emote);
-
-        [Command("offtank2")]
-        [Summary("Adds a emote as an OT2")]
-        [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OffTank2Async([Remainder] string emote = null) => await Ot2Async(emote);
-
-        [Command("ot2")]
-        [Summary("Adds a emote as an OT2")]
-        [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task Ot2Async([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Ot2, emote);
         #endregion
         #endregion
     }

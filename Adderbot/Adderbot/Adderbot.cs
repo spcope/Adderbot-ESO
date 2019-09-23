@@ -18,10 +18,10 @@ namespace Adderbot
         public static ulong DevId = 110881914956623872;
         public static string[] EmoteNames = new string[]
         {
-            "denhealer", "dkhealer", "nbhealer", "plarhealer", "sorchealer",
-            "dentank", "dktank", "nbtank", "plartank", "sorctank",
-            "magblade", "magden", "magdk", "magplar", "magsorc",
-            "stamblade", "stamden", "stamdk", "stamplar", "stamsorc"
+            "denhealer", "dkhealer", "nbhealer", "plarhealer", "sorchealer", "necrohealer",
+            "dentank", "dktank", "nbtank", "plartank", "sorctank", "necrotank",
+            "magblade", "magden", "magdk", "magplar", "magsorc", "magcro",
+            "stamblade", "stamden", "stamdk", "stamplar", "stamsorc", "stamcro"
         };
 
         public static async Task StartAsync()

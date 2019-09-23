@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,9 +47,13 @@ namespace Adderbot.Services
             {
                 if (result.Error == CommandError.BadArgCount)
                 {
-
+                    await context.User.SendMessageAsync(
+                        "Not enough arguments for that command were provided. Use the help command to check out the commands and their arguments.");
                 }
-                await context.Channel.SendMessageAsync(result.ErrorReason);
+                else
+                {
+                    await context.Channel.SendMessageAsync(result.ErrorReason);
+                }
             }
             else
             {
