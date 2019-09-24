@@ -14,11 +14,21 @@ namespace Adderbot.Modules.Base
 {
     internal class BaseModule : ModuleBase<SocketCommandContext>
     {
-        private async Task<AdderGuild> CheckGuildValid(ulong guildId)
+        private async Task<AdderGuild> GetGuild()
         {
-            var guild = GuildHelper.GetGuildById(guildId);
+            var guild = GuildHelper.GetGuildById(Context.Guild.Id);
             if (guild != null) return guild;
             await Context.User.SendMessageAsync(MessageText.Error.InvalidGuild);
+            return null;
+        }
+
+        private async Task<AdderRaid> GetRaid()
+        {
+            var guild = GetGuild().Result;
+            if (guild == null) return null;
+            var raid = RaidHelper.GetRaidByChannelId(guild, Context.Channel.Id);
+            if (raid != null) return raid;
+            await Context.User.SendMessageAsync(MessageText.Error.InvalidRaid);
             return null;
         }
 
@@ -40,12 +50,24 @@ namespace Adderbot.Modules.Base
             return parsedEmote;
         }
 
+        [Command("summon")]
+        [Summary("@s the raiders listed in the raid in the channel")]
+        [RequireBotPermission(ChannelPermission.SendMessages)]
+        public async Task SummonRaiders()
+        {
+            var raid = GetRaid().Result;
+            if (raid != null)
+            {
+                await ReplyAsync($"{raid.BuildPlayers()}\n\nRaid led by {raid.Lead} is forming. X up in guild or whisper them in game.");
+            }
+        }
+
         [Command("check-emotes")]
         [Summary("Checks which emotes are available")]
         [RequireBotPermission(ChannelPermission.SendMessages)]
         public async Task CheckEmotes()
         {
-            var guild = CheckGuildValid(Context.Guild.Id).Result;
+            var guild = GetGuild().Result;
             if (guild != null && guild.EmotesAvailable)
             {
                 await ReplyAsync(
@@ -62,7 +84,7 @@ namespace Adderbot.Modules.Base
         {
             try
             {
-                var guild = CheckGuildValid(Context.Guild.Id).Result;
+                var guild = GetGuild().Result;
                 if (guild != null)
                 {
                     var path = Directory.GetCurrentDirectory();
@@ -91,7 +113,7 @@ namespace Adderbot.Modules.Base
         {
             try
             {
-                var guild = CheckGuildValid(Context.Guild.Id).Result;
+                var guild = GetGuild().Result;
                 if (guild != null)
                 {
                     foreach (var emote in Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)))

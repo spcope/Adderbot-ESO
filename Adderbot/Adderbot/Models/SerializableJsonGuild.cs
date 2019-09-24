@@ -395,7 +395,7 @@ namespace Adderbot.Models
         {
             return $"{BuildAllowedRoles()}\n" +
                    $"{Headline}\n" +
-                   $"{GeneratePlayers()}";
+                   $"{BuildPlayers()}";
         }
 
         public string BuildAllowedRoles()
@@ -455,7 +455,7 @@ namespace Adderbot.Models
             return eb.Build();
         }
 
-        private string GeneratePlayers()
+        public string BuildPlayers()
         {
             var players = "";
             var added = new List<AdderPlayer>();
