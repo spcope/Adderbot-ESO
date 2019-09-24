@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Adderbot.Constants;
@@ -10,11 +9,11 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace Adderbot.Modules.Base
+namespace Adderbot.Modules
 {
     internal class BaseModule : ModuleBase<SocketCommandContext>
     {
-        private async Task<AdderGuild> GetGuild()
+        protected async Task<AdderGuild> GetGuild()
         {
             var guild = GuildHelper.GetGuildById(Context.Guild.Id);
             if (guild != null) return guild;
@@ -22,7 +21,7 @@ namespace Adderbot.Modules.Base
             return null;
         }
 
-        private async Task<AdderRaid> GetRaid()
+        protected async Task<AdderRaid> GetRaid()
         {
             var guild = GetGuild().Result;
             if (guild == null) return null;
@@ -32,7 +31,15 @@ namespace Adderbot.Modules.Base
             return null;
         }
 
-        private static async Task<Emote> CheckEmoteValid(string emote, SocketCommandContext scc)
+        protected async Task<bool> CheckUserIsLead(AdderRaid adderRaid)
+        {
+            if (Context.User.Id == adderRaid.Lead) return true;
+            await Context.User.SendMessageAsync(MessageText.Error.NotRaidLead);
+            return false;
+
+        }
+
+        protected static async Task<Emote> CheckEmoteValid(string emote, SocketCommandContext scc)
         {
             if (emote == null) return null;
             if (!Emote.TryParse(emote, out var parsedEmote))
@@ -50,83 +57,12 @@ namespace Adderbot.Modules.Base
             return parsedEmote;
         }
 
-        [Command("summon")]
-        [Summary("@s the raiders listed in the raid in the channel")]
-        [RequireBotPermission(ChannelPermission.SendMessages)]
-        public async Task SummonRaiders()
+        protected async Task<IMessage> GetMessageById(ulong messageId)
         {
-            var raid = GetRaid().Result;
-            if (raid != null)
-            {
-                await ReplyAsync($"{raid.BuildPlayers()}\n\nRaid led by {raid.Lead} is forming. X up in guild or whisper them in game.");
-            }
-        }
-
-        [Command("check-emotes")]
-        [Summary("Checks which emotes are available")]
-        [RequireBotPermission(ChannelPermission.SendMessages)]
-        public async Task CheckEmotes()
-        {
-            var guild = GetGuild().Result;
-            if (guild != null && guild.EmotesAvailable)
-            {
-                await ReplyAsync(
-                    $"Available Emotes\n{Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)).Aggregate("", (current, emote) => current + $"{emote} - {emote.Name}\n")}");
-            }
-        }
-
-        [Command("add-emotes")]
-        [Summary("Attempts to add all the emotes the bot uses & enables them")]
-        [RequireBotPermission(ChannelPermission.SendMessages)]
-        [RequireBotPermission(GuildPermission.ManageEmojis)]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task AddEmotes()
-        {
-            try
-            {
-                var guild = GetGuild().Result;
-                if (guild != null)
-                {
-                    var path = Directory.GetCurrentDirectory();
-
-                    foreach (var emote in Adderbot.EmoteNames)
-                        await Context.Guild.CreateEmoteAsync(emote,
-                            new Image($@"{path}\Media\{emote}.png"));
-
-                    guild.EmotesAvailable = true;
-                }
-            }
-            catch (Exception)
-            {
-                await Context.User.SendMessageAsync(
-                    "Could not add all the emotes, typically this means you do not have enough space. " +
-                    "At least 24 slots are required to add all emotes.");
-            }
-        }
-
-        [Command("remove-emotes")]
-        [Summary("Attempts to add all the emotes the bot uses & enables them")]
-        [RequireBotPermission(ChannelPermission.SendMessages)]
-        [RequireBotPermission(GuildPermission.ManageEmojis)]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task RemoveEmotes()
-        {
-            try
-            {
-                var guild = GetGuild().Result;
-                if (guild != null)
-                {
-                    foreach (var emote in Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)))
-                        await Context.Guild.DeleteEmoteAsync(emote);
-
-                    guild.EmotesAvailable = false;
-                }
-            }
-            catch (Exception)
-            {
-                await Context.User.SendMessageAsync(
-                    "Could not delete all the emotes.");
-            }
+            var raidMessage = await Context.Channel.GetMessageAsync(messageId);
+            if (raidMessage != null) return raidMessage;
+            await Context.User.SendMessageAsync(MessageText.Error.InvalidRaid);
+            return null;
         }
 
         [Command("set-debug")]
@@ -172,91 +108,7 @@ namespace Adderbot.Modules.Base
                                                     + $"{Context.Guild.Name}/{Context.Channel.Name}");
         }
 
-        [Command("addallowedrole")]
-        [Summary("Adds a user role to the allowed list for the raid.")]
-        [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task AddAllowedRoleAsync([Remainder] string userRole)
-        {
-            var guildId = Context.Guild.Id;
-
-            var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == guildId);
-            if (guild == null)
-            {
-                await Context.User.SendMessageAsync(
-                    $"There is not a raid in {Context.Guild.Name}/{Context.Channel.Name} to set allowed roles for!");
-            }
-
-            else
-            {
-                var activeRaid = guild.ActiveRaids.FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
-                if (activeRaid == null)
-                {
-                    await Context.User.SendMessageAsync(
-                        $"There is not a raid in {Context.Guild.Name}/{Context.Channel.Name} to set allowed roles for!");
-                }
-                else
-                {
-                    var raid = activeRaid.Raid;
-
-                    if (raid == null)
-                    {
-                        await Context.User.SendMessageAsync(
-                            $"There is not a raid in {Context.Guild.Name}/{Context.Channel.Name} to set allowed roles for!");
-                    }
-                    else
-                    {
-                        if (raid.Lead != Context.User.Id)
-                        {
-                            await Context.User.SendMessageAsync(
-                                "You are not the lead for this raid and cannot add allowed roles!");
-                        }
-                        else
-                        {
-                            var socketRole =
-                                Context.Guild.Roles.FirstOrDefault(x => x.Name.ToLower().Equals(userRole.ToLower()));
-                            if (socketRole == null)
-                            {
-                                await Context.User.SendMessageAsync("Please enter a valid role!");
-                            }
-                            else
-                            {
-                                var raidMessage = await Context.Channel.GetMessageAsync(raid.MessageId);
-                                if (raidMessage == null)
-                                {
-                                    await Context.User.SendMessageAsync(
-                                        $"There is not a raid in {Context.Guild.Name}/{Context.Channel.Name} to set allowed roles for!");
-                                }
-                                else
-                                {
-                                    if (!raid.AllowedRoles.Contains(socketRole.Id))
-                                    {
-                                        raid.AllowedRoles.Add(socketRole.Id);
-                                        await Context.User.SendMessageAsync(
-                                            $"Added {userRole} to the list of allowed roles for the raid.");
-                                        await ((IUserMessage) raidMessage)
-                                            .ModifyAsync(x =>
-                                            {
-                                                x.Embed = raid.BuildEmbed();
-                                                x.Content = raid.BuildAllowedRoles();
-                                            });
-                                    }
-                                    else
-                                    {
-                                        await Context.User.SendMessageAsync(
-                                            $"{userRole} was already in the list and couldn't be added.");
-                                    }
-
-                                    if (raid.AllowedRoles.Contains(0))
-                                    {
-                                        raid.AllowedRoles.Remove(0);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        
 
         [Command("removeallowedrole")]
         [Summary("Removes a user role from the allowed list for the raid.")]

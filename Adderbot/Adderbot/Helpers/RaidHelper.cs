@@ -12,7 +12,7 @@ namespace Adderbot.Helpers
             {
                 return adderGuild.ActiveRaids.Find(x => x.ChannelId == channelId).Raid;
             }
-            catch (ArgumentException ae)
+            catch (ArgumentException)
             {
                 return null;
             }

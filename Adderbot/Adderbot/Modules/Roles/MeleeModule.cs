@@ -2,7 +2,6 @@
 using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
-using Adderbot.Modules.Base;
 
 namespace Adderbot.Modules.Roles
 {
