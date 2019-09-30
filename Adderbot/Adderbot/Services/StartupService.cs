@@ -48,6 +48,9 @@ namespace Adderbot.Services
             await _commandSvc.AddModuleAsync<HealerModule>(null);
             await _commandSvc.AddModuleAsync<MeleeModule>(null);
             await _commandSvc.AddModuleAsync<RangedModule>(null);
+            await _commandSvc.AddModuleAsync<EmoteModule>(null);
+            await _commandSvc.AddModuleAsync<AdminModule>(null);
+            await _commandSvc.AddModuleAsync<RaidLeadModule>(null);
         }
 
         private static Task RemoveGuild(SocketGuild sg)
