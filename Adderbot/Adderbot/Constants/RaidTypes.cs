@@ -16,12 +16,12 @@
         public const string As2 = "AS+2";
         public const string Ss = "SS";
         public const string Invalid = "Invalid";
-
         public const string RaidTypeDescriptors = "Aetherian Archive: `aa`\n" +
                                                   "Sanctum Ophidia: `so`\n" +
                                                   "Hel Ra Citadel: `hrc`\n" +
                                                   "Halls of Fabrication: `hof`\n" +
                                                   "Maw of Lorkhaj: `mol`\n" +
+                                                  "Sunspire: `ss`\n" +
                                                   "Asylum Sanctorum: `as+<hardmode level>`\n" +
                                                   "Cloudrest: `cr+<hardmode level>`";
     }

@@ -176,6 +176,11 @@ namespace Adderbot.Models
                 case "veteran":
                     rClass = "v";
                     break;
+                case "hm":
+                case "hard mode":
+                case "hardmode":
+                    rClass = "hm";
+                    break;
                 default:
                     rClass = "Invalid";
                     break;
@@ -294,7 +299,7 @@ namespace Adderbot.Models
 
             if (mNum + rNum + fNum > expectedDpsNum) throw new ArgumentException("Could create a raid with that many dps.");
 
-            Headline = $"Gear up for a {rClass}{Type} on {date} @{time} {timezone}!";
+            Headline = $"Gear up for a {generateRaidName(rClass, Type)} on {date} @{time} {timezone}!";
 
             int i;
             for (i = 0; i < mNum; i++)
@@ -368,6 +373,10 @@ namespace Adderbot.Models
                     }
                     break;
             }
+        }
+        private String generateRaidName(String rClass, String type)
+        {
+            return rClass.Equals("hm") ? "v" + type + " " + rClass : rClass + type;
         }
 
         private bool CheckRoleAvailable(Role role)
