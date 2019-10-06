@@ -23,6 +23,6 @@
                                                   "Maw of Lorkhaj: `mol`\n" +
                                                   "Sunspire: `ss`\n" +
                                                   "Asylum Sanctorum: `as+<hardmode level>`\n" +
-                                                  "Cloudrest: `cr+<hardmode level>`\n";
+                                                  "Cloudrest: `cr+<hardmode level>`";
     }
 }
