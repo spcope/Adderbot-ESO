@@ -22,7 +22,8 @@
                                                   "Hel Ra Citadel: `hrc`\n" +
                                                   "Halls of Fabrication: `hof`\n" +
                                                   "Maw of Lorkhaj: `mol`\n" +
+                                                  "Sunspire: `ss`\n" +
                                                   "Asylum Sanctorum: `as+<hardmode level>`\n" +
-                                                  "Cloudrest: `cr+<hardmode level>`";
+                                                  "Cloudrest: `cr+<hardmode level>`\n";
     }
 }
