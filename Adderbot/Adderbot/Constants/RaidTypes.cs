@@ -16,7 +16,6 @@
         public const string As2 = "AS+2";
         public const string Ss = "SS";
         public const string Invalid = "Invalid";
-
         public const string RaidTypeDescriptors = "Aetherian Archive: `aa`\n" +
                                                   "Sanctum Ophidia: `so`\n" +
                                                   "Hel Ra Citadel: `hrc`\n" +
