@@ -24,11 +24,13 @@ namespace Adderbot.Models
         Dps,
         RDps,
         MDps,
+        Cro,
         AltDps,
         AltMDps,
         AltRDps,
         AltTank,
         AltHealer,
+        AltCro,
         InvalidRole
     }
 

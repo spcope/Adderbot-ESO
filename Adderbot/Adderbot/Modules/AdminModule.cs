@@ -45,8 +45,8 @@ namespace Adderbot.Modules
                     guild.ActiveRaids.Remove(ar);
                 }
 
-                await ((ITextChannel) Context.Channel).DeleteMessagesAsync(await Context.Channel.GetMessagesAsync()
-                    .FlattenAsync());
+                var messages = await Context.Channel.GetMessagesAsync().FlattenAsync();
+                await ((ITextChannel) Context.Channel).DeleteMessagesAsync(messages);
                 var purgeMessage = await ReplyAsync("Purge completed. _This message will be deleted in 5 seconds_");
                 for (var i = 4; i > 0; i--)
                 {
@@ -80,7 +80,7 @@ namespace Adderbot.Modules
         [Summary("Sets the role to be used as trial lead")]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task SetLeadRole(string userRole)
+        public async Task SetLeadRole([Remainder] string userRole)
         {
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name.ToLower().Equals(userRole.ToLower()));
             if (role != null)

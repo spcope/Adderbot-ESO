@@ -12,6 +12,7 @@ namespace Adderbot.Constants
         public const string Dps = ":monkey: **DPS**";
         public const string MDps = ":crossed_swords: **mDPS**";
         public const string RDps = ":comet: **rDPS**";
+        public const string Cro = ":skull: **Cro**";
         public const string Gh = ":syringe: **GH**";
         public const string Th = ":syringe: **TH**";
         public const string Kh = ":pill: **KH**";
@@ -21,6 +22,7 @@ namespace Adderbot.Constants
         public const string AltDps = ":eyes: **Alt DPS**";
         public const string AltMDps = ":eyes: **Alt mDPS**";
         public const string AltRDps = ":eyes: **Alt rDPS**";
+        public const string AltNecro = ":skull_crossbones: **Alt Necro**";
 
         public static readonly Dictionary<Role, string> RoleToRepresentation = new Dictionary<Role, string>()
         {

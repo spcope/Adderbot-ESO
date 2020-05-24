@@ -1,4 +1,5 @@
-﻿using Adderbot.Services;
+﻿using System;
+using Adderbot.Services;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -16,6 +17,12 @@ namespace Adderbot
         public static AdderData Data;
         public static ulong BotId = 376194715726512138;
         public static ulong DevId = 110881914956623872;
+
+        public static ulong[] BannedGuilds = new ulong[]
+        {
+            412466947683385344,
+            548657326018527200
+        };
         public static string[] EmoteNames = new string[]
         {
             "denhealer", "dkhealer", "nbhealer", "plarhealer", "sorchealer", "necrohealer",
@@ -23,6 +30,8 @@ namespace Adderbot
             "magblade", "magden", "magdk", "magplar", "magsorc", "magcro",
             "stamblade", "stamden", "stamdk", "stamplar", "stamsorc", "stamcro"
         };
+
+        public static Random randomGen;
 
         public static async Task StartAsync()
         {
@@ -43,6 +52,8 @@ namespace Adderbot
                 .AddSingleton<StartupService>();
 
             var serviceProvider = services.BuildServiceProvider();
+            
+            randomGen = new Random();
 
             await serviceProvider.GetRequiredService<StartupService>().StartAsync();
 

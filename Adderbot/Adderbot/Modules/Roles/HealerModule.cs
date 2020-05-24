@@ -74,7 +74,7 @@ namespace Adderbot.Modules.Roles
         [Command("cagehealer")]
         [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task CageHealerAsync([Remainder] string emote = null) => await H2Async(emote);
+        public async Task CageHealerAsync([Remainder] string emote = null) => await ChAsync(emote);
 
         [Command("ch")]
         [Summary("Adds emote as a healer")]
@@ -82,6 +82,19 @@ namespace Adderbot.Modules.Roles
         public async Task ChAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Ch, emote);
         #endregion
         
+        #region TH
+        [Command("tankhealer")]
+        [Summary("Adds emote as a tank healer")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        public async Task TankHealerAsync([Remainder] string emote = null) => await ThAsync(emote);
+
+        [Command("th")]
+        [Summary("Adds emote as a tank healer")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        public async Task ThAsync([Remainder] string emote = null) =>
+            await BaseModule.UpdateRoster(Context, Role.Th, emote);
+        #endregion
+
         #endregion
     }
 }

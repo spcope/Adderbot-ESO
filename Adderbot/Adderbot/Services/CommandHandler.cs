@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -27,17 +28,15 @@ namespace Adderbot.Services
 
             // Create a number to track where the prefix ends and the command begins
             var argPos = 0;
-
+            
             var context = new SocketCommandContext(_client, message);
             
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasCharPrefix(';', ref argPos))) return;
-            
+
             var result = await _commands.ExecuteAsync(
                 context: context,
                 argPos: argPos,
                 services: _provider);
-
-            await context.Message.DeleteAsync();
 
             // Optionally, we may inform the user if the command fails
             // to be executed; however, this may not always be desired,
@@ -49,14 +48,16 @@ namespace Adderbot.Services
                 {
                     await context.User.SendMessageAsync(
                         "Not enough arguments for that command were provided. Use the help command to check out the commands and their arguments.");
-                }
-                else
+                } 
+                else if(result.Error != CommandError.UnknownCommand)
                 {
-                    await context.Channel.SendMessageAsync(result.ErrorReason);
+                    await context.User.SendMessageAsync(result.ErrorReason);
+                    await context.Message.DeleteAsync();
                 }
             }
             else
             {
+                await context.Message.DeleteAsync();
                 Adderbot.Save();
             }
         }

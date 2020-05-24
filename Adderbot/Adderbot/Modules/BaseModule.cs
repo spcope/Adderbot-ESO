@@ -67,6 +67,12 @@ namespace Adderbot.Modules
             return null;
         }
 
+        public static async Task TimeDeleteMessage(IUserMessage message, int timeInMs)
+        {
+            await Task.Delay(timeInMs);
+            await message.DeleteAsync();
+        }
+
         public static async Task UpdateRoster(SocketCommandContext scc, Role role, string emote)
         {
             var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == scc.Guild.Id);
@@ -119,6 +125,14 @@ namespace Adderbot.Modules
                     }
                 }
             }
+        }
+
+        protected static ulong ParseUser(string userMention)
+        {
+            var startIdx = userMention.IndexOfAny("0123456789".ToCharArray());
+            var endIdx = userMention.IndexOf('>');
+            var intStr = userMention.Substring(startIdx, userMention.Length - startIdx - 1);
+            return ulong.Parse(intStr);
         }
 
         [Command("dps")]
@@ -209,6 +223,13 @@ namespace Adderbot.Modules
             embedBuilder.Color = Color.Blue;
             embedBuilder.Description = CommandHelp.BasicCommandHelp.Representation;
             await Context.User.SendMessageAsync(null, false, embedBuilder.Build());
+        }
+
+        [Command("flip")]
+        [Summary("Flips the coin")]
+        public async Task FlipCoinAsync()
+        {
+            await TimeDeleteMessage(Adderbot.randomGen.Next(0, 2) == 0 ? (await ReplyAsync("Heads!")) : (await ReplyAsync("Tails!")), 10000);
         }
     }
 }

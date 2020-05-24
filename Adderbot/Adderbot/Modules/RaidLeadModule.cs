@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -71,9 +72,9 @@ namespace Adderbot.Modules
                             var newRaid = new AdderRaid(raidClass, raidType.ToLower(), date, time, timezone,
                                 Context.User.Id, mNum,
                                 rNum, fNum, allowedRoles);
-                            newRaid.MessageId =
-                                (await ReplyAsync(newRaid.BuildAllowedRoles(), false, newRaid.BuildEmbed())).Id;
+                            newRaid.MessageId = (await ReplyAsync(newRaid.BuildAllowedRoles(), false, newRaid.BuildEmbed())).Id;
                             guild.ActiveRaids.Add(new AdderChannel(Context.Channel.Id, newRaid));
+                            Adderbot.Save();
                         }
                         catch (ArgumentException ae)
                         {
@@ -252,7 +253,7 @@ namespace Adderbot.Modules
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task RaidAddAsync(string user, string role, [Remainder] string emote = null)
         {
-            var parsedUser = ulong.Parse(user.Trim().Substring(2, user.Length - 3));
+            var parsedUser = ParseUser(user);
 
             var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == Context.Guild.Id);
             if (guild == null)
@@ -308,6 +309,12 @@ namespace Adderbot.Modules
                                         break;
                                     case "gh":
                                         parsedRole = Role.Gh;
+                                        break;
+                                    case "ch":
+                                        parsedRole = Role.Ch;
+                                        break;
+                                    case "th":
+                                        parsedRole = Role.Th;
                                         break;
 
                                     #endregion
@@ -382,7 +389,7 @@ namespace Adderbot.Modules
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task RaidRemoveAsync(string user)
         {
-            var parsedUser = ulong.Parse(user.ToLower().Trim().Substring(2, user.Length - 3));
+            var parsedUser = ParseUser(user);
 
             var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == Context.Guild.Id);
             if (guild == null)

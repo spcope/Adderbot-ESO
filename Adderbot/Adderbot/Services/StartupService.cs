@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Adderbot.Modules;
 
 namespace Adderbot.Services
@@ -31,7 +32,7 @@ namespace Adderbot.Services
             {
                 throw new Exception("Token is empty. Please make sure to add it to your environment vars.");
             }
-
+            
             _client.Log += Log;
             await _client.LoginAsync(TokenType.Bot, discordToken);
             await _client.StartAsync();
@@ -41,6 +42,7 @@ namespace Adderbot.Services
             _client.ChannelDestroyed += ValidateChannels;
             _client.LeftGuild += RemoveGuild;
             _client.MessageDeleted += ValidateGuilds;
+            
             LoadJson();
 
             await _commandSvc.AddModuleAsync<BaseModule>(null);
@@ -94,6 +96,11 @@ namespace Adderbot.Services
 
         private static async Task ValidateGuilds(SocketGuild sg)
         {
+            if (Adderbot.BannedGuilds.Contains(sg.Id))
+            {
+                await sg.LeaveAsync();
+            }
+
             var ag = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == sg.Id);
             if (ag == null)
             {
