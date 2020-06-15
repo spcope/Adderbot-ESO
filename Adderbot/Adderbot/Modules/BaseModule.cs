@@ -13,6 +13,10 @@ namespace Adderbot.Modules
 {
     internal class BaseModule : ModuleBase<SocketCommandContext>
     {
+        /// <summary>
+        /// Retrieves the guild associated with the command. 
+        /// </summary>
+        /// <returns></returns>
         protected async Task<AdderGuild> GetGuild()
         {
             var guild = GuildHelper.GetGuildById(Context.Guild.Id);
@@ -21,6 +25,10 @@ namespace Adderbot.Modules
             return null;
         }
 
+        /// <summary>
+        /// Gets the raid in the channel the message is sent in, if it exists.
+        /// </summary>
+        /// <returns></returns>
         protected async Task<AdderRaid> GetRaid()
         {
             var guild = GetGuild().Result;
@@ -30,21 +38,70 @@ namespace Adderbot.Modules
             await Context.User.SendMessageAsync(MessageText.Error.InvalidRaid);
             return null;
         }
-
-        protected async Task<bool> CheckUserIsLead(AdderRaid adderRaid)
+        
+        /// <summary>
+        /// Get role, if exists, from a string
+        /// </summary>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        protected async Task<SocketRole> GetRoleFromString(string role)
         {
-            if (Context.User.Id == adderRaid.Lead) return true;
+            return Context.Guild.Roles.FirstOrDefault(x => x.Name.Equals(role.Trim()));
+        }
+
+        /// <summary>
+        /// Validate the the user who sent message is the lead of the raid in the channel
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <returns></returns>
+        protected async Task<bool> ValidateUseHasRaidLeadRole(AdderGuild guild)
+        {
+            if (guild.Lead == 0 || ((SocketGuildUser) Context.User).Roles.FirstOrDefault(
+                                    x => x.Id == guild.Lead) != null
+                                || ((SocketGuildUser) Context.User).GuildPermissions.Administrator) return true;
+            await Context.User.SendMessageAsync(MessageText.Error.HasNoRaidLeadRole);
+            return false;
+        }
+        
+        /// <summary>
+        /// Validates that the channel the message was sent in has no raid 
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <returns></returns>
+        protected async Task<bool> ValidateChannelIsEmpty(AdderGuild guild)
+        {
+            if (guild.ActiveRaids.FirstOrDefault(x => x.ChannelId == Context.Channel.Id) == null) return true;
+            await Context.User.SendMessageAsync(
+                $"There is already a raid in {Context.Guild.Name}/{Context.Channel.Name}");
+            return false;
+        }
+        
+        /// <summary>
+        /// Validates that the user is the lead of the raid in the channel message is sent in
+        /// </summary>
+        /// <param name="adderRaid"></param>
+        /// <returns></returns>
+        protected async Task<bool> ValidateUserIsLead(AdderRaid adderRaid)
+        {
+            if (RaidHelper.CheckUserIsLead(Context.User.Id, adderRaid)) return true;
             await Context.User.SendMessageAsync(MessageText.Error.NotRaidLead);
             return false;
         }
 
-        protected static async Task<Emote> CheckEmoteValid(string emote, SocketCommandContext scc)
+        /// <summary>
+        /// Validates if the emote string is valid
+        /// </summary>
+        /// <param name="emote"></param>
+        /// <param name="scc"></param>
+        /// <returns></returns>
+        protected static async Task<Emote> ValidateEmoteValid(string emote, SocketCommandContext scc)
         {
             if (emote == null) return null;
             if (!Emote.TryParse(emote, out var parsedEmote))
             {
                 await scc.User.SendMessageAsync(
                     "Emote not available. You'll still be added to the raid, but without the emote");
+                return null;
             }
 
             if (scc.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name))
@@ -106,7 +163,7 @@ namespace Adderbot.Modules
                     {
                         try
                         {
-                            adderChannel.Raid.AddPlayer(scc.User.Id, role, CheckEmoteValid(emote, scc).Result);
+                            adderChannel.Raid.AddPlayer(scc.User.Id, role, ValidateEmoteValid(emote, scc).Result);
                             await ((IUserMessage) await scc.Channel.GetMessageAsync(adderChannel.Raid.MessageId))
                                 .ModifyAsync(x =>
                                 {

@@ -17,5 +17,10 @@ namespace Adderbot.Helpers
                 return null;
             }
         }
+
+        public static bool CheckUserIsLead(ulong uid, AdderRaid raid)
+        {
+            return uid == raid.Lead;
+        }
     }
 }

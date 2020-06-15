@@ -17,12 +17,18 @@ namespace Adderbot
         public static AdderData Data;
         public static ulong BotId = 376194715726512138;
         public static ulong DevId = 110881914956623872;
+        public const string LiveToken = "Adderbot";
+        public const string TestToken = "AdderbotTest";
+        public const string LiveFile = @"C:\Adderbot\adderbot.json";
+        public const string TestFile = @"C:\Adderbot\adderbot-test.json";
+        public const bool IsLive = true;
 
         public static ulong[] BannedGuilds = new ulong[]
         {
             412466947683385344,
             548657326018527200
         };
+        
         public static string[] EmoteNames = new string[]
         {
             "denhealer", "dkhealer", "nbhealer", "plarhealer", "sorchealer", "necrohealer",
@@ -64,7 +70,7 @@ namespace Adderbot
 
         public static void Save()
         {
-            File.WriteAllLines(@"C:\Adderbot\adderbot.json", new [] { Data.ToJson() });
+            File.WriteAllLines(IsLive ? LiveFile : TestFile, new [] { Data.ToJson() });
         }
     }
 }

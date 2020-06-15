@@ -18,7 +18,7 @@ namespace Adderbot.Services
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commandSvc;
-        
+
         public StartupService(DiscordSocketClient client, CommandService commandSvc)
         {
             _client = client;
@@ -27,7 +27,7 @@ namespace Adderbot.Services
 
         public async Task StartAsync()
         {
-            var discordToken = Environment.GetEnvironmentVariable("Adderbot");
+            var discordToken = Environment.GetEnvironmentVariable(Adderbot.IsLive ? Adderbot.LiveToken : Adderbot.TestToken);
             if(string.IsNullOrWhiteSpace(discordToken))
             {
                 throw new Exception("Token is empty. Please make sure to add it to your environment vars.");
@@ -53,6 +53,7 @@ namespace Adderbot.Services
             await _commandSvc.AddModuleAsync<EmoteModule>(null);
             await _commandSvc.AddModuleAsync<AdminModule>(null);
             await _commandSvc.AddModuleAsync<RaidLeadModule>(null);
+            await _commandSvc.AddModuleAsync<CroModule>(null);
         }
 
         private static Task RemoveGuild(SocketGuild sg)
@@ -143,7 +144,7 @@ namespace Adderbot.Services
         {
             try
             {
-                var reader = new StreamReader(@"C:\Adderbot\adderbot.json");
+                var reader = new StreamReader(Adderbot.IsLive ? Adderbot.LiveFile : Adderbot.TestFile);
                 Adderbot.Data = !reader.EndOfStream ? AdderData.FromJson(reader.ReadToEnd()) : new AdderData();
             }
             catch (FileNotFoundException)
