@@ -8,6 +8,12 @@ namespace Adderbot.Modules.Roles
     public class MeleeModule : ModuleBase<SocketCommandContext>
     {
         #region Generics
+        /// <summary>
+        /// Handles ;m
+        /// Signs the user up as a mDPS
+        /// </summary>
+        /// <param name="emote">String representation of the emote</param>
+        /// <returns></returns>
         [Command("m")]
         [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
@@ -16,6 +22,12 @@ namespace Adderbot.Modules.Roles
             await MeleeAsync(emote);
         }
 
+        /// <summary>
+        /// Handles ;mdps
+        /// Signs the user up as a mDPS
+        /// </summary>
+        /// <param name="emote">String representation of the emote</param>
+        /// <returns></returns>
         [Command("mdps")]
         [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
@@ -24,6 +36,12 @@ namespace Adderbot.Modules.Roles
             await MeleeAsync(emote);
         }
 
+        /// <summary>
+        /// Handles ;stam
+        /// Signs the user up as a mDPS
+        /// </summary>
+        /// <param name="emote">String representation of the emote</param>
+        /// <returns></returns>
         [Command("stam")]
         [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
@@ -32,6 +50,13 @@ namespace Adderbot.Modules.Roles
             await MeleeAsync(emote);
         }
 
+        /// <summary>
+        /// Handles ;melee
+        /// Signs the user up as a mDPS
+        /// All mDPS commands route to this method
+        /// </summary>
+        /// <param name="emote">String representation of the emote</param>
+        /// <returns></returns>
         [Command("melee")]
         [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]

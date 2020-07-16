@@ -3,6 +3,9 @@ using Adderbot.Models;
 
 namespace Adderbot.Constants
 {
+    /// <summary>
+    /// Contains representations of the various role types used by the bot
+    /// </summary>
     public static class RoleRepresentations
     {
         private const string Mt = ":shield: **MT**";
@@ -24,6 +27,9 @@ namespace Adderbot.Constants
         private const string AltRDps = ":eyes: **Alt rDPS**";
         private const string AltCro = ":eyes: **Alt Necro**";
 
+        /// <summary>
+        /// Map of Role to its textual representation
+        /// </summary>
         private static readonly Dictionary<Role, string> RoleToRepresentation = new Dictionary<Role, string>()
         {
             {Role.Mt, Mt}, {Role.Ot, Ot}, {Role.H1, H1}, {Role.H2, H2}, {Role.Ch, Ch},
@@ -32,6 +38,11 @@ namespace Adderbot.Constants
             {Role.AltDps, AltDps}, {Role.AltMDps, AltMDps}, {Role.AltRDps, AltRDps}, {Role.AltCro, AltCro}
         };
 
+        /// <summary>
+        /// Gets the representation for the passed in role
+        /// </summary>
+        /// <param name="role">Role to get the representation for</param>
+        /// <returns>String representation of the role</returns>
         public static string GetRepresentation(Role role)
         {
             return RoleToRepresentation.GetValueOrDefault(role);

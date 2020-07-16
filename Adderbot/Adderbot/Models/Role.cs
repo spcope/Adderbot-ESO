@@ -1,5 +1,8 @@
 namespace Adderbot.Models
 {
+    /// <summary>
+    /// Enum containing the various roles supported by Adderbot (i.e. MT, OT, etc)
+    /// </summary>
     public enum Role
     {
         T,

@@ -21,7 +21,7 @@ namespace Adderbot
         public const string TestToken = "AdderbotTest";
         public const string LiveFile = @"C:\Adderbot\adderbot.json";
         public const string TestFile = @"C:\Adderbot\adderbot-test.json";
-        public const bool IsLive = true;
+        public const bool IsLive = false;
 
         public static ulong[] BannedGuilds = new ulong[]
         {

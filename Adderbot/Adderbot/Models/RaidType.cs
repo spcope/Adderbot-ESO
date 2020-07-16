@@ -1,5 +1,8 @@
 ﻿namespace Adderbot.Models
 {
+    /// <summary>
+    /// Enum containing the various types of raids Adderbot supports (i.e. AA, HRC, etc)
+    /// </summary>
     public enum RaidType
     {
         Aa,

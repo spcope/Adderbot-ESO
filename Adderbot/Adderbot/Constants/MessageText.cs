@@ -2,6 +2,9 @@ namespace Adderbot.Constants
 {
     public static class MessageText
     {
+        /// <summary>
+        /// Contains standard error messages used by the bot
+        /// </summary>
         public static class Error
         {
             public const string InvalidGuild = "Somehow the guild could not be found, contact the developers for help";

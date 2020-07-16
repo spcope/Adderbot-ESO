@@ -3,6 +3,9 @@ using Adderbot.Models;
 
 namespace Adderbot.Constants
 {
+    /// <summary>
+    /// Contains representations of the various raid types used by the bot
+    /// </summary>
     public static class RaidTypeRepresentation
     {
         private const string Aa = "AA";
@@ -26,7 +29,10 @@ namespace Adderbot.Constants
         private const string KaY = "KA Yandir";
         private const string KaVY = "KA Vrol+Yandir";
 
-        public static readonly Dictionary<RaidType, string> RaidTypeToRepresentation =
+        /// <summary>
+        /// Map of RaidType to its textual representation
+        /// </summary>
+        private static readonly Dictionary<RaidType, string> RaidTypeToRepresentation =
             new Dictionary<RaidType, string>()
             {
                 {RaidType.Aa, Aa}, {RaidType.So, So}, {RaidType.Hrc, Hrc}, {RaidType.Mol, Mol}, {RaidType.Hof, Hof},
@@ -35,5 +41,15 @@ namespace Adderbot.Constants
                 {RaidType.SsFI, SsFI}, {RaidType.Ka, Ka}, {RaidType.KaV, KaV}, {RaidType.KaY, KaY},
                 {RaidType.KaVY, KaVY}
             };
+
+        /// <summary>
+        /// Gets the representation for the passed in raid type
+        /// </summary>
+        /// <param name="raidType">Raid type to get the representation for</param>
+        /// <returns>String representation of the raid type</returns>
+        public static string GetRepresentation(RaidType raidType)
+        {
+            return RaidTypeToRepresentation.GetValueOrDefault(raidType);
+        }
     }
 }

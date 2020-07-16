@@ -222,7 +222,7 @@ namespace Adderbot.Models
 
                 #region Mini Trials
 
-                case "cr+0":
+                case Keywords.Create.Cr0:
                     Type = RaidType.Cr0;
                     expectedDpsNum = 7;
                     AvailableRoles.Add(Role.Ot);
@@ -230,7 +230,7 @@ namespace Adderbot.Models
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
-                case "cr+1":
+                case Keywords.Create.Cr1:
                     Type = RaidType.Cr1;
                     expectedDpsNum = 7;
                     AvailableRoles.Add(Role.Ot);
@@ -238,7 +238,7 @@ namespace Adderbot.Models
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
-                case "cr+2":
+                case Keywords.Create.Cr2:
                     Type = RaidType.Cr2;
                     expectedDpsNum = 7;
                     AvailableRoles.Add(Role.Ot);
@@ -246,7 +246,7 @@ namespace Adderbot.Models
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
-                case "cr+3":
+                case Keywords.Create.Cr3:
                     Type = RaidType.Cr3;
                     expectedDpsNum = 7;
                     AvailableRoles.Add(Role.Ot);
@@ -254,19 +254,19 @@ namespace Adderbot.Models
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Kh);
                     break;
-                case "as+0":
+                case Keywords.Create.As0:
                     Type = RaidType.As0;
                     AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Th);
                     break;
-                case "as+1":
+                case Keywords.Create.As1:
                     Type = RaidType.As1;
                     AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
                     AvailableRoles.Add(Role.Th);
                     break;
-                case "as+2":
+                case Keywords.Create.As2:
                     Type = RaidType.As2;
                     AvailableRoles.Add(Role.Ot);
                     AvailableRoles.Add(Role.Gh);
@@ -396,11 +396,11 @@ namespace Adderbot.Models
             switch (rClass)
             {
                 case RaidClass.Norm:
-                    return "n" + RaidTypeRepresentation.RaidTypeToRepresentation[type];
+                    return "n" + RaidTypeRepresentation.GetRepresentation(type);
                 case RaidClass.Vet:
-                    return "v" + RaidTypeRepresentation.RaidTypeToRepresentation[type];
+                    return "v" + RaidTypeRepresentation.GetRepresentation(type);
                 case RaidClass.Hardmode:
-                    return "v" + RaidTypeRepresentation.RaidTypeToRepresentation[type] + " " + "HM";
+                    return "v" + RaidTypeRepresentation.GetRepresentation(type) + " " + "HM";
                 default:
                     return "Invalid raid";
             }
