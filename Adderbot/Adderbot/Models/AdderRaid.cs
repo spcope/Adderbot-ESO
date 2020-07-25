@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Adderbot.Constants;
+using Adderbot.Helpers;
 using Discord;
 using Newtonsoft.Json;
 

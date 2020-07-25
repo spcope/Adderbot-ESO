@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Adderbot.Constants;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -38,21 +39,17 @@ namespace Adderbot.Services
                 argPos: argPos,
                 services: _provider);
 
-            // Optionally, we may inform the user if the command fails
-            // to be executed; however, this may not always be desired,
-            // as it may clog up the request queue should a user spam a
-            // command.
+            // If the command could not execute send appropriate error
             if (!result.IsSuccess)
             {
+                // If not enough arguments send error message
                 if (result.Error == CommandError.BadArgCount)
                 {
-                    await context.User.SendMessageAsync(
-                        "Not enough arguments for that command were provided. Use the help command to check out the commands and their arguments.");
+                    await context.User.SendMessageAsync(MessageText.Error.CommandBadArgCount);
                 } 
                 else if(result.Error != CommandError.UnknownCommand)
                 {
-                    await context.User.SendMessageAsync(result.ErrorReason);
-                    await context.Message.DeleteAsync();
+                    await context.User.SendMessageAsync(MessageText.Error.CommandInvalid);
                 }
             }
             else

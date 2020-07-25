@@ -2,10 +2,11 @@
 using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
+using Adderbot.Constants;
 
 namespace Adderbot.Modules.Roles
 {
-    public class MeleeModule : ModuleBase<SocketCommandContext>
+    public class MeleeModule : BaseModule
     {
         #region Generics
         /// <summary>
@@ -14,7 +15,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("m")]
+        [Command(Keywords.Role.MeleeDamageRole.M)]
         [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MAsync([Remainder] string emote = null)
@@ -28,7 +29,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("mdps")]
+        [Command(Keywords.Role.MeleeDamageRole.MDps)]
         [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MdpsAsync([Remainder] string emote = null)
@@ -42,7 +43,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("stam")]
+        [Command(Keywords.Role.MeleeDamageRole.Stam)]
         [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task StamAsync([Remainder] string emote = null)
@@ -57,12 +58,12 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("melee")]
+        [Command(Keywords.Role.MeleeDamageRole.Melee)]
         [Summary("Adds emote as a melee dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MeleeAsync([Remainder] string emote = null)
         {
-            await BaseModule.UpdateRoster(Context, Role.MDps, emote);
+            await UpdateRoster(Role.MDps, emote);
         }
         #endregion
     }

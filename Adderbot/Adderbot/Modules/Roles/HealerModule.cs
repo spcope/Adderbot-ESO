@@ -2,22 +2,24 @@
 using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
+using Adderbot.Constants;
 
 namespace Adderbot.Modules.Roles
 {
     /// <summary>
     /// Module of all commands related to signing up as a Healer
     /// </summary>
-    public class HealerModule : ModuleBase<SocketCommandContext>
+    public class HealerModule : BaseModule
     {
         #region Generics
+
         /// <summary>
         /// Handles ;h
         /// Signs the user up as a generic healer
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("h")]
+        [Command(Keywords.Role.HealerRole.H)]
         [Summary("Adds a emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task HAsync([Remainder] string emote = null) => await HealerAsync(emote);
@@ -29,21 +31,24 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("healer")]
+        [Command(Keywords.Role.HealerRole.Healer)]
         [Summary("Adds a emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task HealerAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.H, emote);
+        public async Task HealerAsync([Remainder] string emote = null) => await UpdateRoster(Role.H, emote);
+
         #endregion
 
         #region Healer Specifics
+
         #region H1
+
         /// <summary>
         /// Handles ;healer1
         /// Signs the user up as the H1 role with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("healer1")]
+        [Command(Keywords.Role.HealerRole.Healer1)]
         [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task Healer1Async([Remainder] string emote = null) => await H1Async(emote);
@@ -55,20 +60,22 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("h1")]
+        [Command(Keywords.Role.HealerRole.H1)]
         [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task H1Async([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.H1, emote);
+        public async Task H1Async([Remainder] string emote = null) => await UpdateRoster(Role.H1, emote);
+
         #endregion
 
         #region H2
+
         /// <summary>
         /// Handles ;healer2
         /// Signs the user up as the H2 role with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("healer2")]
+        [Command(Keywords.Role.HealerRole.Healer2)]
         [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task Healer2Async([Remainder] string emote = null) => await H2Async(emote);
@@ -80,20 +87,22 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("h2")]
+        [Command(Keywords.Role.HealerRole.H2)]
         [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task H2Async([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.H2, emote);
+        public async Task H2Async([Remainder] string emote = null) => await UpdateRoster(Role.H2, emote);
+
         #endregion
-        
+
         #region GH
+
         /// <summary>
         /// Handles ;grouphealer
         /// Signs the user up as the GH role with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("grouphealer")]
+        [Command(Keywords.Role.HealerRole.GroupHealer)]
         [Summary("Adds a emote as a group healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task GroupHealerAsync([Remainder] string emote = null) => await GhAsync(emote);
@@ -105,20 +114,22 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote"></param>
         /// <returns></returns>
-        [Command("gh")]
+        [Command(Keywords.Role.HealerRole.Gh)]
         [Summary("Adds a emote as a group healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task GhAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Gh, emote);
+        public async Task GhAsync([Remainder] string emote = null) => await UpdateRoster(Role.Gh, emote);
+
         #endregion
 
         #region KH
+
         /// <summary>
         /// Handles ;kitehealer
         /// Signs the user up as the KH role with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("kitehealer")]
+        [Command(Keywords.Role.HealerRole.KiteHealer)]
         [Summary("Adds a emote as a kite healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task KiteHealerAsync([Remainder] string emote = null) => await KhAsync(emote);
@@ -130,20 +141,22 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote"></param>
         /// <returns></returns>
-        [Command("kh")]
+        [Command(Keywords.Role.HealerRole.Kh)]
         [Summary("Adds a emote as a kite healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task KhAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Kh, emote);
+        public async Task KhAsync([Remainder] string emote = null) => await UpdateRoster(Role.Kh, emote);
+
         #endregion
-        
+
         #region CH
+
         /// <summary>
         /// Handles ;cagehealer
         /// Signs the user up as the CH role with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("cagehealer")]
+        [Command(Keywords.Role.HealerRole.CageHealer)]
         [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task CageHealerAsync([Remainder] string emote = null) => await ChAsync(emote);
@@ -155,20 +168,22 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("ch")]
+        [Command(Keywords.Role.HealerRole.Ch)]
         [Summary("Adds emote as a healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task ChAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Ch, emote);
+        public async Task ChAsync([Remainder] string emote = null) => await UpdateRoster(Role.Ch, emote);
+
         #endregion
-        
+
         #region TH
+
         /// <summary>
         /// Handles ;tankhealer
         /// Signs the user up as the TH role with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("tankhealer")]
+        [Command(Keywords.Role.HealerRole.TankHealer)]
         [Summary("Adds emote as a tank healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task TankHealerAsync([Remainder] string emote = null) => await ThAsync(emote);
@@ -180,11 +195,12 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("th")]
+        [Command(Keywords.Role.HealerRole.Th)]
         [Summary("Adds emote as a tank healer")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task ThAsync([Remainder] string emote = null) =>
-            await BaseModule.UpdateRoster(Context, Role.Th, emote);
+            await UpdateRoster(Role.Th, emote);
+
         #endregion
 
         #endregion

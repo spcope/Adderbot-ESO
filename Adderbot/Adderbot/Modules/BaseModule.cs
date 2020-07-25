@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Adderbot.Constants;
 using Adderbot.Helpers;
@@ -9,9 +9,11 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
+// NOTE: This file is the one module that does not contain any commands
+
 namespace Adderbot.Modules
 {
-    internal class BaseModule : ModuleBase<SocketCommandContext>
+    public class BaseModule : ModuleBase<SocketCommandContext>
     {
         /// <summary>
         /// Retrieves the guild associated with the command. 
@@ -21,7 +23,7 @@ namespace Adderbot.Modules
         {
             var guild = GuildHelper.GetGuildById(Context.Guild.Id);
             if (guild != null) return guild;
-            await Context.User.SendMessageAsync(MessageText.Error.InvalidGuild);
+            await SendMessageToUser(MessageText.Error.InvalidGuild);
             return null;
         }
 
@@ -35,51 +37,79 @@ namespace Adderbot.Modules
             if (guild == null) return null;
             var raid = RaidHelper.GetRaidByChannelId(guild, Context.Channel.Id);
             if (raid != null) return raid;
-            await Context.User.SendMessageAsync(MessageText.Error.InvalidRaid);
+            await SendMessageToUser(MessageText.Error.InvalidRaid);
             return null;
         }
-        
+
         /// <summary>
         /// Get role, if exists, from a string
         /// </summary>
-        /// <param name="role"></param>
+        /// <param name="role">The string representation of the role</param>
         /// <returns></returns>
-        protected async Task<SocketRole> GetRoleFromString(string role)
+        protected SocketRole GetRoleFromString(string role)
         {
             return Context.Guild.Roles.FirstOrDefault(x => x.Name.Equals(role.Trim()));
         }
 
         /// <summary>
-        /// Validate the the user who sent message is the lead of the raid in the channel
+        /// Get the Discord message associated with messageId
         /// </summary>
-        /// <param name="guild"></param>
+        /// <param name="messageId">The id of the Discord message</param>
         /// <returns></returns>
-        protected async Task<bool> ValidateUseHasRaidLeadRole(AdderGuild guild)
+        protected async Task<IMessage> GetMessageById(ulong messageId)
         {
+            // Try to get the message
+            var raidMessage = await Context.Channel.GetMessageAsync(messageId);
+            if (raidMessage != null) return raidMessage;
+            // Return invalid raid message
+            await Context.User.SendMessageAsync(MessageText.Error.InvalidRaid);
+            return null;
+        }
+
+        /// <summary>
+        /// Sends a message to the user
+        /// </summary>
+        /// <param name="message">The message to send to the user</param>
+        protected async Task SendMessageToUser(string message)
+        {
+            await Context.User.SendMessageAsync(message);
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Validate the the user who sent message is a raid lead
+        /// </summary>
+        /// <param name="guild">The guild to validate against</param>
+        /// <returns></returns>
+        protected async Task<bool> ValidateUserHasRaidLeadRole(AdderGuild guild)
+        {
+            // Look if the user has the lead role
             if (guild.Lead == 0 || ((SocketGuildUser) Context.User).Roles.FirstOrDefault(
                                     x => x.Id == guild.Lead) != null
-                                || ((SocketGuildUser) Context.User).GuildPermissions.Administrator) return true;
-            await Context.User.SendMessageAsync(MessageText.Error.HasNoRaidLeadRole);
+                                || GuildHelper.IsUserAdminInGuild(Context.Guild, Context.User)) return true;
+            // Send error message
+            await SendMessageToUser(MessageText.Error.HasNoRaidLeadRole);
             return false;
         }
-        
+
         /// <summary>
         /// Validates that the channel the message was sent in has no raid 
         /// </summary>
-        /// <param name="guild"></param>
+        /// <param name="guild">The guild to validate against</param>
         /// <returns></returns>
         protected async Task<bool> ValidateChannelIsEmpty(AdderGuild guild)
         {
+            // Check if channel is empty
             if (guild.ActiveRaids.FirstOrDefault(x => x.ChannelId == Context.Channel.Id) == null) return true;
-            await Context.User.SendMessageAsync(
-                $"There is already a raid in {Context.Guild.Name}/{Context.Channel.Name}");
+            // Send error message
+            await SendMessageToUser($"There is already a raid in {Context.Guild.Name}/{Context.Channel.Name}");
             return false;
         }
-        
+
         /// <summary>
         /// Validates that the user is the lead of the raid in the channel message is sent in
         /// </summary>
-        /// <param name="adderRaid"></param>
+        /// <param name="adderRaid">The raid to validate against</param>
         /// <returns></returns>
         protected async Task<bool> ValidateUserIsLead(AdderRaid adderRaid)
         {
@@ -91,202 +121,108 @@ namespace Adderbot.Modules
         /// <summary>
         /// Validates if the emote string is valid
         /// </summary>
-        /// <param name="emote"></param>
-        /// <param name="scc"></param>
+        /// <param name="emote">The string representation of the emote</param>
         /// <returns></returns>
-        protected static async Task<Emote> ValidateEmoteValid(string emote, SocketCommandContext scc)
+        protected async Task<Emote> ValidateEmoteValid(string emote)
         {
+            // Null check
             if (emote == null) return null;
+
+            // Attempt to parse emote
             if (!Emote.TryParse(emote, out var parsedEmote))
             {
-                await scc.User.SendMessageAsync(
-                    "Emote not available. You'll still be added to the raid, but without the emote");
+                await SendMessageToUser(MessageText.Error.EmoteUnparseable);
                 return null;
             }
 
-            if (scc.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name))
+            // Get the emote in the Discord guild
+            if (Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name))
                 .Any(guildEmote => guildEmote.Id == parsedEmote.Id))
             {
                 return parsedEmote;
             }
 
-            await scc.User.SendMessageAsync(
-                "Emote not available. You'll still be added to the raid, but without the emote");
-
-            return parsedEmote;
-        }
-
-        protected async Task<IMessage> GetMessageById(ulong messageId)
-        {
-            var raidMessage = await Context.Channel.GetMessageAsync(messageId);
-            if (raidMessage != null) return raidMessage;
-            await Context.User.SendMessageAsync(MessageText.Error.InvalidRaid);
+            // Send error message
+            await SendMessageToUser(MessageText.Error.EmoteInvalid);
+            // Return null
             return null;
         }
 
-        public static async Task TimeDeleteMessage(IUserMessage message, int timeInMs)
+        /// <summary>
+        /// Deletes a message after timeInMs milliseconds
+        /// </summary>
+        /// <param name="message">The Discord message to be deleted</param>
+        /// <param name="timeInMs">The time in ms until message is deleted</param>
+        /// <returns></returns>
+        public async Task TimeDeleteMessage(IUserMessage message, int timeInMs)
         {
             await Task.Delay(timeInMs);
             await message.DeleteAsync();
         }
 
-        public static async Task UpdateRoster(SocketCommandContext scc, Role role, string emote)
+        /// <summary>
+        /// Updates the roster with the current user, role, and emote
+        /// </summary>
+        /// <param name="role">The role of the user to add</param>
+        /// <param name="emote">The string representation of the emote</param>
+        /// <returns></returns>
+        public async Task UpdateRoster(Role role, string emote)
         {
-            var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == scc.Guild.Id);
-            if (guild == null)
+            // Get the raid
+            var raid = GetRaid().Result;
+
+            if (raid != null)
             {
-                await scc.User.SendMessageAsync("Somehow the guild did not get added. Contact the developer for help.");
-            }
-            else
-            {
-                var adderChannel = guild.ActiveRaids.FirstOrDefault(x => x.ChannelId == scc.Channel.Id);
-                if (adderChannel == null)
+                if (!(raid.AllowedRoles.Contains(0)
+                      || ((SocketGuildUser) Context.User).Roles.Any(x =>
+                          raid.AllowedRoles.Contains(x.Id))))
                 {
-                    await scc.User.SendMessageAsync("There is not a raid in this channel!");
+                    // If the raid is not @everyone or does not have an AllowedRole
+                    await SendMessageToUser(
+                        $"You aren't allowed to join this raid, please message <@{raid.Lead}> for more information.");
+                }
+                else if (raid.CurrentPlayers.Count(x => x.PlayerId == Context.User.Id) != 0)
+                {
+                    // Send error message if user is already in the raid
+                    await SendMessageToUser(MessageText.Error.AlreadyInRaid);
                 }
                 else
                 {
-                    if (!adderChannel.Raid.AllowedRoles.Contains(0)
-                        && ((SocketGuildUser) scc.User).Roles.FirstOrDefault(x =>
-                            adderChannel.Raid.AllowedRoles.Contains(x.Id)) == null)
+                    try
                     {
-                        await scc.User.SendMessageAsync(
-                            $"You aren't allowed to join this raid, please message <@{adderChannel.Raid.Lead}> for more information.");
-                    }
-                    else if (adderChannel.Raid.CurrentPlayers.Count(x => x.PlayerId == scc.User.Id) != 0)
-                    {
-                        await scc.User.SendMessageAsync(
-                            $"You already joined this raid, if you want to change your role, remove" +
-                            $" yourself from it and add yourself again.");
-                    }
-                    else
-                    {
-                        try
-                        {
-                            adderChannel.Raid.AddPlayer(scc.User.Id, role, ValidateEmoteValid(emote, scc).Result);
-                            await ((IUserMessage) await scc.Channel.GetMessageAsync(adderChannel.Raid.MessageId))
-                                .ModifyAsync(x =>
-                                {
-                                    x.Embed = adderChannel.Raid.BuildEmbed();
-                                    x.Content = adderChannel.Raid.BuildAllowedRoles();
-                                });
-                        }
-                        catch (ArgumentException ae)
-                        {
-                            await scc.User.SendMessageAsync(ae.Message);
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.Message);
-                        }
-                    }
-                }
-            }
-        }
-
-        protected static ulong ParseUser(string userMention)
-        {
-            var startIdx = userMention.IndexOfAny("0123456789".ToCharArray());
-            var endIdx = userMention.IndexOf('>');
-            var intStr = userMention.Substring(startIdx, userMention.Length - startIdx - 1);
-            return ulong.Parse(intStr);
-        }
-
-        [Command("dps")]
-        [Summary("Adds user as a dps")]
-        [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task DpsAsync([Remainder] string emote = null)
-        {
-            await UpdateRoster(Context, Role.Dps, emote);
-        }
-
-        [Command("remove")]
-        [Summary("Removes the user from the raid.")]
-        [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task RemoveAsync()
-        {
-            var guildId = Context.Guild.Id;
-
-            var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == guildId);
-            if (guild == null)
-            {
-                await Context.User.SendMessageAsync(
-                    "The guild did not get added somehow. Contact the developer for help.");
-            }
-
-            else
-            {
-                var adderChannel = guild.ActiveRaids.FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
-                if (adderChannel == null)
-                {
-                    await Context.User.SendMessageAsync(
-                        $"There is not a raid in {Context.Guild.Name}/{Context.Channel.Name}");
-                }
-                else
-                {
-                    var adderPlayer =
-                        adderChannel.Raid.CurrentPlayers.FirstOrDefault(x => x.PlayerId == Context.User.Id);
-                    if (adderPlayer != null)
-                    {
-                        adderChannel.Raid.CurrentPlayers.Remove(adderPlayer);
-                        await ((IUserMessage) await Context.Channel.GetMessageAsync(adderChannel.Raid.MessageId))
+                        // Add the new player to the raid
+                        raid.AddPlayer(Context.User.Id, role, ValidateEmoteValid(emote).Result);
+                        // Redraw raid
+                        await ((IUserMessage) await Context.Channel.GetMessageAsync(raid.MessageId))
                             .ModifyAsync(x =>
                             {
-                                x.Embed = adderChannel.Raid.BuildEmbed();
-                                x.Content = adderChannel.Raid.BuildAllowedRoles();
+                                x.Embed = raid.BuildEmbed();
+                                x.Content = raid.BuildAllowedRoles();
                             });
+                    }
+                    catch (ArgumentException ae)
+                    {
+                        // If AddPlayer ran into error, send error message
+                        await SendMessageToUser(ae.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine(e.Message);
                     }
                 }
             }
         }
 
-        [Command("help")]
-        [Summary("Sends the help message")]
-        public async Task HelpAsync()
+        /// <summary>
+        /// Parses the user mention into a user's id
+        /// </summary>
+        /// <param name="userMention">String of the user mention</param>
+        /// <returns>0 if unparseable, the ulong id of the Discord user if parseable</returns>
+        protected static ulong ParseUser(string userMention)
         {
-            var isAdmin = false;
-            var isTrialLead = false;
-
-            var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == Context.Guild.Id);
-            if (guild == null || ((SocketGuildUser) Context.User).GuildPermissions.Administrator)
-            {
-                isAdmin = true;
-                isTrialLead = true;
-            }
-            else
-            {
-                var adderChannel = guild.ActiveRaids.FirstOrDefault(x => x.Raid.Lead == Context.User.Id);
-                if (adderChannel != null || ((SocketGuildUser) Context.User).Roles.Count(x => x.Id == guild.Lead) != 0)
-                {
-                    isTrialLead = true;
-                }
-            }
-
-            var embedBuilder = new EmbedBuilder();
-            if (isAdmin)
-            {
-                embedBuilder.Color = Color.Green;
-                embedBuilder.Description = CommandHelp.AdminCommandHelp.Representation;
-                await Context.User.SendMessageAsync(null, false, embedBuilder.Build());
-            }
-
-            if (isTrialLead)
-            {
-                embedBuilder.Color = Color.Purple;
-                embedBuilder.Description = CommandHelp.RaidLeadCommandHelp.Representation;
-                await Context.User.SendMessageAsync(null, false, embedBuilder.Build());
-            }
-
-            embedBuilder.Color = Color.Blue;
-            embedBuilder.Description = CommandHelp.BasicCommandHelp.Representation;
-            await Context.User.SendMessageAsync(null, false, embedBuilder.Build());
-        }
-
-        [Command("flip")]
-        [Summary("Flips the coin")]
-        public async Task FlipCoinAsync()
-        {
-            await TimeDeleteMessage(Adderbot.randomGen.Next(0, 2) == 0 ? (await ReplyAsync("Heads!")) : (await ReplyAsync("Tails!")), 10000);
+            // Fish out the numbers out of the user mention
+            var intStr = Regex.Match(userMention, @"\d+").Value;
+            return string.IsNullOrEmpty(intStr) ? 0 : ulong.Parse(intStr);
         }
     }
 }

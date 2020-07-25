@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Adderbot.Constants;
 using Adderbot.Models;
 using Discord;
 using Discord.Commands;
@@ -11,27 +12,28 @@ namespace Adderbot.Modules.Roles
     internal class CroModule : BaseModule
     {
         #region Generics
+
         /// <summary>
         /// Handles ;n
         /// Signs the user up as a necromancer with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("n")]
+        [Command(Keywords.Role.CroRole.N)]
         [Summary("Adds emote as a necro dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task NAsync([Remainder] string emote = null)
         {
             await NecroAsync(emote);
         }
-        
+
         /// <summary>
         /// Handles ;c
         /// Signs the user up as a necromancer with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("c")]
+        [Command(Keywords.Role.CroRole.C)]
         [Summary("Adds emote as a necro dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task CAsync([Remainder] string emote = null)
@@ -45,7 +47,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("cro")]
+        [Command(Keywords.Role.CroRole.Cro)]
         [Summary("Adds emote as a necro dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task CroAsync([Remainder] string emote = null)
@@ -59,21 +61,21 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("magcro")]
+        [Command(Keywords.Role.CroRole.MagCro)]
         [Summary("Adds emote as a necro dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MagcroAsync([Remainder] string emote = null)
         {
             await NecroAsync(emote);
         }
-        
+
         /// <summary>
         /// Handles ;stamcro
         /// Signs the user up as a necromancer with the given emote
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("stamcro")]
+        [Command(Keywords.Role.CroRole.StamCro)]
         [Summary("Adds emote as a necro dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task StamcroAsync([Remainder] string emote = null)
@@ -88,13 +90,14 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("necro")]
+        [Command(Keywords.Role.CroRole.Necro)]
         [Summary("Adds emote as a necro dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task NecroAsync([Remainder] string emote = null)
         {
-            await UpdateRoster(Context, Role.Cro, emote);
+            await UpdateRoster(Role.Cro, emote);
         }
+
         #endregion
     }
 }

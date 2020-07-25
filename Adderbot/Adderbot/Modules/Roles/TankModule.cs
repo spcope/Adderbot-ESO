@@ -2,10 +2,11 @@
 using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
+using Adderbot.Constants;
 
 namespace Adderbot.Modules.Roles
 {
-    public class TankModule : ModuleBase<SocketCommandContext>
+    public class TankModule : BaseModule
     {
         #region Generics
         /// <summary>
@@ -14,7 +15,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("t")]
+        [Command(Keywords.Role.TankRole.T)]
         [Summary("Adds a emote as a tank")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task TankAbbrevAsync([Remainder] string emote = null) => await TankAsync(emote);
@@ -26,10 +27,10 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("tank")]
+        [Command(Keywords.Role.TankRole.Tank)]
         [Summary("Adds a emote as a tank.")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task TankAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.T, emote);
+        public async Task TankAsync([Remainder] string emote = null) => await UpdateRoster(Role.T, emote);
         #endregion
 
         #region Tank Specifics
@@ -40,7 +41,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("maintank")]
+        [Command(Keywords.Role.TankRole.MainTank)]
         [Summary("Adds a emote as a MT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MainTankAsync([Remainder] string emote = null) => await MtAsync(emote);
@@ -52,10 +53,10 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("mt")]
+        [Command(Keywords.Role.TankRole.Mt)]
         [Summary("Adds a emote as a MT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task MtAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Mt, emote);
+        public async Task MtAsync([Remainder] string emote = null) => await UpdateRoster(Role.Mt, emote);
         #endregion
 
         #region OT
@@ -65,7 +66,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("offtank")]
+        [Command(Keywords.Role.TankRole.OffTank)]
         [Summary("Adds a emote as an OT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task OffTankAsync([Remainder] string emote = null) => await OtAsync(emote);
@@ -77,10 +78,10 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("ot")]
+        [Command(Keywords.Role.TankRole.Ot)]
         [Summary("Adds a emote as an OT")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task OtAsync([Remainder] string emote = null) => await BaseModule.UpdateRoster(Context, Role.Ot, emote);
+        public async Task OtAsync([Remainder] string emote = null) => await UpdateRoster(Role.Ot, emote);
         #endregion
         #endregion
     }

@@ -37,5 +37,11 @@ namespace Adderbot.Helpers
         {
             return uid == raid.Lead;
         }
+
+        public static void RemoveRaid(AdderGuild guild, ulong channelId, ulong userId)
+        {
+            guild.ActiveRaids.Remove(guild.ActiveRaids.FirstOrDefault(x =>
+                (x.ChannelId == channelId && x.Raid?.Lead == userId)));
+        }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Adderbot.Constants;
 using Discord;
 using Discord.Commands;
 
@@ -9,6 +10,11 @@ namespace Adderbot.Modules
 {
     internal class EmoteModule : BaseModule
     {
+        /// <summary>
+        /// Handles ;check-emotes
+        /// Checks what emotes are available in the server (if any)
+        /// </summary>
+        /// <returns></returns>
         [Command("check-emotes")]
         [Summary("Checks which emotes are available")]
         [RequireBotPermission(ChannelPermission.SendMessages)]
@@ -19,6 +25,10 @@ namespace Adderbot.Modules
             {
                 await ReplyAsync(
                     $"Available Emotes\n{Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)).Aggregate("", (current, emote) => current + $"{emote} - {emote.Name}\n")}");
+            }
+            else
+            {
+                await ReplyAsync(MessageText.Error.EmotesUnavailable);
             }
         }
         

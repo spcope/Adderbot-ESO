@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Adderbot.Helpers;
 using Adderbot.Modules;
 
 namespace Adderbot.Services
@@ -42,6 +43,7 @@ namespace Adderbot.Services
             _client.ChannelDestroyed += ValidateChannels;
             _client.LeftGuild += RemoveGuild;
             _client.MessageDeleted += ValidateGuilds;
+            _client.UserLeft += RemoveUser;
             
             LoadJson();
 
@@ -54,6 +56,15 @@ namespace Adderbot.Services
             await _commandSvc.AddModuleAsync<AdminModule>(null);
             await _commandSvc.AddModuleAsync<RaidLeadModule>(null);
             await _commandSvc.AddModuleAsync<CroModule>(null);
+            await _commandSvc.AddModuleAsync<DpsModule>(null);
+            await _commandSvc.AddModuleAsync<GenericModule>(null);
+            await _commandSvc.AddModuleAsync<MiscModule>(null);
+        }
+
+        private static Task RemoveUser(SocketGuildUser user)
+        {
+            var raidsToRemoveUserFrom = GuildHelper.FindRaidsUserIsIn(user.Guild, user.Id);
+            return Task.CompletedTask;
         }
 
         private static Task RemoveGuild(SocketGuild sg)

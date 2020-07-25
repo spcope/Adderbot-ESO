@@ -2,10 +2,11 @@
 using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
+using Adderbot.Constants;
 
 namespace Adderbot.Modules.Roles
 {
-    public class RangedModule : ModuleBase<SocketCommandContext>
+    public class RangedModule : BaseModule
     {
         #region Generics
         /// <summary>
@@ -14,7 +15,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("r")]
+        [Command(Keywords.Role.RangedDamageRole.R)]
         [Summary("Adds emote as a ranged dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task MAsync([Remainder] string emote = null)
@@ -28,7 +29,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("rdps")]
+        [Command(Keywords.Role.RangedDamageRole.RDps)]
         [Summary("Adds emote as a ranged dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task RdpsAsync([Remainder] string emote = null)
@@ -42,7 +43,7 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("range")]
+        [Command(Keywords.Role.RangedDamageRole.Range)]
         [Summary("Adds emote as a ranged dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task StamAsync([Remainder] string emote = null)
@@ -57,12 +58,12 @@ namespace Adderbot.Modules.Roles
         /// </summary>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
-        [Command("ranged")]
+        [Command(Keywords.Role.RangedDamageRole.Ranged)]
         [Summary("Adds emote as a ranged dps")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task RangedAsync([Remainder] string emote = null)
         {
-            await BaseModule.UpdateRoster(Context, Role.RDps, emote);
+            await UpdateRoster(Role.RDps, emote);
         }
         #endregion
     }

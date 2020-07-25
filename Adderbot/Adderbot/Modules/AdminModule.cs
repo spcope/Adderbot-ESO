@@ -1,53 +1,46 @@
-using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Adderbot.Models;
+using Adderbot.Constants;
 using Discord;
 using Discord.Commands;
 
 namespace Adderbot.Modules
 {
+    /// <summary>
+    /// Module of all administrative commands
+    /// </summary>
     internal class AdminModule : BaseModule
     {
-        [Command("summon")]
-        [Summary("@s the raiders listed in the raid in the channel")]
-        [RequireBotPermission(ChannelPermission.SendMessages)]
-        public async Task SummonRaiders()
-        {
-            var raid = GetRaid().Result;
-            if (raid != null)
-            {
-                await ReplyAsync(
-                    $"{raid.BuildPlayers()}{raid.Type} led by <@{raid.Lead}> is forming. X up in guild or whisper them in game.");
-            }
-        }
-
+        /// <summary>
+        /// Handles ;purge
+        /// Purges up to 100 messages in the channel
+        /// </summary>
+        /// <returns></returns>
         [Command("purge")]
         [Summary("Purges channel of all messages")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task PurgeAsync()
         {
-            var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == Context.Guild.Id);
-            if (guild == null)
+            // Retrieve the AdderGuild
+            var guild = GetGuild().Result;
+
+            if (guild != null)
             {
-                await Context.User.SendMessageAsync(
-                    "Somehow the guild did not get added. Contact the developer for help.");
-            }
+                // Get the AdderChannel object in the purged channel (if it exists)
+                var ac = guild.ActiveRaids.FirstOrDefault(x => (x.ChannelId == Context.Channel.Id));
 
-            else
-            {
-                var ar = guild.ActiveRaids.FirstOrDefault(x => (x.ChannelId == Context.Channel.Id));
+                // If the AdderChannel object is null, remove it from the ActiveRaids list for the guild
+                if (ac != null) guild.ActiveRaids.Remove(ac);
 
-                if (ar != null)
-                {
-                    guild.ActiveRaids.Remove(ar);
-                }
-
+                // Retrieve 100 messages and delete them
                 var messages = await Context.Channel.GetMessagesAsync().FlattenAsync();
                 await ((ITextChannel) Context.Channel).DeleteMessagesAsync(messages);
+                
+                // Post purge message
                 var purgeMessage = await ReplyAsync("Purge completed. _This message will be deleted in 5 seconds_");
+                
+                // Iterate once a second and update purge message
                 for (var i = 4; i > 0; i--)
                 {
                     await Task.Delay(1000);
@@ -55,51 +48,63 @@ namespace Adderbot.Modules
                         x.Content = $"Purge completed. _This message will be deleted in {i} seconds_");
                 }
 
+                // Fully delete the purge message
                 await purgeMessage.DeleteAsync();
             }
         }
 
+        /// <summary>
+        /// Handles ;set-debug
+        /// Turns debug mode on and off. Resets on bot reboot. Only usable by the Developer.
+        /// </summary>
+        /// <returns></returns>
         [Command("set-debug")]
         [Summary("Flips the debug switch, can turn on and off")]
         [RequireBotPermission(ChannelPermission.SendMessages)]
         public async Task SetDebug()
         {
+            // Check if user is the developer
             if (Context.User.Id == Adderbot.DevId)
             {
+                // Flip switch and send message
                 Adderbot.InDebug = !Adderbot.InDebug;
-                await Context.User.SendMessageAsync($"Set bot debug to {Adderbot.InDebug}");
+                await SendMessageToUser($"Set bot debug to {Adderbot.InDebug}");
+                await Task.CompletedTask;
             }
             else
             {
-                await Context.User.SendMessageAsync(
-                    "How you know this command exists, I don't know. But you can't use it.");
+                await SendMessageToUser(MessageText.Error.CommandUnavailable);
             }
         }
 
+        /// <summary>
+        /// Handles ;setleadrole
+        /// Sets the role used to create raids
+        /// </summary>
+        /// <param name="userRole"></param>
+        /// <returns></returns>
         [Command("setleadrole")]
         [Summary("Sets the role to be used as trial lead")]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task SetLeadRole([Remainder] string userRole)
         {
-            var role = Context.Guild.Roles.FirstOrDefault(x => x.Name.ToLower().Equals(userRole.ToLower()));
+            // Get the role from its string representation 
+            var role = GetRoleFromString(userRole);
+            
             if (role != null)
             {
-                await Context.User.SendMessageAsync($"Successfully set trial lead role to {userRole} in "
-                                                    + $"{Context.Guild.Name}/{Context.Channel.Name}");
-
-                var gid = Context.Guild.Id;
-                var guild = Adderbot.Data.Guilds.FirstOrDefault(x => x.GuildId == gid);
-
-                if (guild == null)
-                    Adderbot.Data.Guilds.Add(new AdderGuild(gid, role.Id));
-                else
-                    guild.Lead = role.Id;
+                // Get the guild
+                var guild = GetGuild().Result;
+                // Retrieve the lead role id
+                guild.Lead = role.Id;
+                
+                await SendMessageToUser($"Successfully set trial lead role to {userRole} in {Context.Guild.Name}");
             }
-
             else
-                await Context.User.SendMessageAsync($"Unable to set trial lead role to {userRole} in "
-                                                    + $"{Context.Guild.Name}/{Context.Channel.Name}");
+            {
+                await SendMessageToUser($"Unable to set trial lead role to {userRole} in {Context.Guild.Name}");
+            }
         }
     }
 }
