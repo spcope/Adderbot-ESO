@@ -2,7 +2,7 @@ namespace Adderbot.Constants
 {
     public static class CarryHelp
     {
-        public const string TotalText = "Total Gold Amount: $";
+        public const string TotalText = "Total Gold Amount: ";
 
         public static class TrialHelp
         {
