@@ -9,7 +9,7 @@ using Discord.WebSocket;
 
 namespace Adderbot.Modules
 {
-    internal class CarryModule : BaseModule
+    public class CarryModule : BaseModule
     {
         [Command("trial")]
         [Summary("Calculates the payout for a trial.")]
@@ -25,11 +25,11 @@ namespace Adderbot.Modules
 
             try
             {
-                var payoutValues = Constants.CarryHelp.TotalText + String.Format("{0:0,0.0}", total);
+                var payoutValues = Constants.CarryHelp.TotalText + String.Format("{0:0,0.00}", total);
                 for (int i = 0; i < Constants.CarryHelp.TrialHelp.TrialPayoutTypes.Length; i++)
-                    payoutValues += Environment.NewLine + Constants.CarryHelp.TrialHelp.TrialPayoutTypes[i] + String.Format("{0:0,0.0}", total * Constants.CarryHelp.TrialHelp.TrialModifiers[i]);
+                    payoutValues += Environment.NewLine + Constants.CarryHelp.TrialHelp.TrialPayoutTypes[i] + String.Format("{0:0,0.00}", total * Constants.CarryHelp.TrialHelp.TrialModifiers[i]);
 
-                await Context.User.SendMessageAsync(payoutValues);
+                await Context.Channel.SendMessageAsync("```" + payoutValues + "```");
             }
             catch (ArgumentException ae)
             {
@@ -51,11 +51,11 @@ namespace Adderbot.Modules
 
             try
             {
-                var payoutValues = Constants.CarryHelp.TotalText + String.Format("{0:0,0.0}", total);
+                var payoutValues = Constants.CarryHelp.TotalText + String.Format("{0:0,0.00}", total);
                 for (int i = 0; i < Constants.CarryHelp.FourManHelp.FourManPayoutTypes.Length; i++)
-                    payoutValues += Environment.NewLine + Constants.CarryHelp.FourManHelp.FourManPayoutTypes[i] + String.Format("{0:0,0.0}", total * Constants.CarryHelp.FourManHelp.FourManModifiers[i]);
+                    payoutValues += Environment.NewLine + Constants.CarryHelp.FourManHelp.FourManPayoutTypes[i] + String.Format("{0:0,0.00}", total * Constants.CarryHelp.FourManHelp.FourManModifiers[i]);
 
-                await Context.User.SendMessageAsync(payoutValues);
+                await Context.Channel.SendMessageAsync("```" + payoutValues + "```");
             }
             catch (ArgumentException ae)
             {
