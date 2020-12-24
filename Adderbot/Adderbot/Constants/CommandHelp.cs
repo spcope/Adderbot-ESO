@@ -77,7 +77,25 @@
                 $":large_blue_diamond: {Remove}\n\n";
         }
 
-        public static readonly string FullRepresentation = AdminCommandHelp.Representation + RaidLeadCommandHelp.Representation + BasicCommandHelp.Representation;
+        public static class CarryCommandHelp
+        {
+            public const string Trial = "`;trial <int>` - calculates the cut for a trial carry";
+
+            public const string FourMan = "`;4man <int>` - calculates the cut for a 4 man, arena or dungeon carry";
+
+            public const string Arena = "`;4man <int>` - calculates the cut for a 4 man, arena or dungeon carry";
+
+            public const string Dungeon = "`;4man <int>` - calculates the cut for a 4 man, arena or dungeon carry";
+
+            public static readonly string Representation = 
+            ":moneybag:  __**Carry Commands**__  :moneybag:\n\n" +
+                $":money_with_wings: {Trial}\n\n" +
+                $":money_with_wings: {FourMan}\n\n" +
+                $":money_with_wings: {Arena}\n\n" +
+                $":money_with_wings: {Dungeon}\n\n";
+        }
+
+        public static readonly string FullRepresentation = AdminCommandHelp.Representation + RaidLeadCommandHelp.Representation + BasicCommandHelp.Representation + CarryCommandHelp.Representation;
 
         public static class RaidLeadHelp
         {
