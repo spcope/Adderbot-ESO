@@ -8,7 +8,7 @@ namespace Adderbot
         {
             try
             {
-                Adderbot.StartAsync().GetAwaiter().GetResult();
+                new Adderbot().StartAsync().GetAwaiter().GetResult();
             }
             catch (Exception e)
             {

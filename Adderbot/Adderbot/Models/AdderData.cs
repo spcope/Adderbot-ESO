@@ -11,14 +11,14 @@ namespace Adderbot.Models
         /// <summary>
         /// List of AdderGuilds that Adderbot manages
         /// </summary>
-        [JsonProperty("Guilds")] public List<AdderGuild> Guilds { get; set; }
+        [JsonProperty("Guilds")] public SynchronizedCollection<AdderGuild> Guilds { get; set; }
 
         /// <summary>
         /// Creates an empty AdderData object, with an empty list of AdderGuilds
         /// </summary>
         public AdderData()
         {
-            Guilds = new List<AdderGuild>();
+            Guilds = new SynchronizedCollection<AdderGuild>();
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Adderbot.Models
         /// </summary>
         /// <param name="guilds">List of AdderGuilds to initialize the AdderData object with</param>
         [JsonConstructor]
-        public AdderData(List<AdderGuild> guilds)
+        public AdderData(SynchronizedCollection<AdderGuild> guilds)
         {
             Guilds = guilds;
         }

@@ -35,11 +35,31 @@ namespace Adderbot.Constants
                 "Command could not be found. Use the help command to check out the commands.";
 
             public const string EmotesUnavailable = "Emotes have not been enabled for this server.";
+
+            public const string EmotesCannotBeAdded =
+                "Could not add all the emotes, typically this means you do not have enough space. At least 24 slots are required to add all emotes.";
+
+            public const string EmotesCannotBeDeleted = "Could not delete all the emotes.";
+
+            public const string InvalidTime =
+                "Time was in invalid time format. Please use 12-hour time with am/pm attached. For example 2pm or 7am";
+
+            public const string InvalidTimezone = "Timezone is invalid. Please use a standard timezone.";
+        }
+
+        public static class Success
+        {
+            public const string EmoteAddSuccessful = "Successfully added emotes!";
+
+            public const string EmoteDeleteSuccessful = "Successfully deleted emotes!";
         }
 
         public static class Misc
         {
             public const string DeleteSuccessful = "Deleted raid successfully!";
+
+            public const string LongCommandWarning =
+                "This command takes a long time to complete, Adderbot will message you when it is complete.";
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Adderbot.Helpers
         {
             try
             {
-                return adderGuild.ActiveRaids.Find(x => x.ChannelId == channelId).Raid;
+                return adderGuild.ActiveRaids.FirstOrDefault(x => x.ChannelId == channelId)?.Raid;
             }
             catch (ArgumentException)
             {

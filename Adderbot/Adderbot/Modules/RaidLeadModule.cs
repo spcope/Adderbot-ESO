@@ -7,10 +7,11 @@ using Adderbot.Helpers;
 using Adderbot.Models;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 namespace Adderbot.Modules
 {
-    internal class RaidLeadModule : BaseModule
+    public class RaidLeadModule : BaseModule
     {
         /// <summary>
         /// Handles ;summon
@@ -27,7 +28,7 @@ namespace Adderbot.Modules
             if (raid != null)
             {
                 // Validate the user can edit the raid
-                if (GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
                     await ReplyAsync(
                         $"{raid.BuildPlayers()}{RaidTypeRepresentation.GetRepresentation(raid.Type)} led by <@{raid.Lead}> is forming. X up in guild or whisper them in game.");
             }
@@ -66,7 +67,7 @@ namespace Adderbot.Modules
                     if (ValidateUserHasRaidLeadRole(guild).Result)
                     {
                         // List of roles allowed in the raid
-                        var allowedRoles = new List<ulong>();
+                        var allowedRoles = new SynchronizedCollection<ulong>();
 
                         // If there are no allowed roles specified, add @everyone (ID: 0)
                         if (allowedRolesArgs == null)
@@ -144,7 +145,7 @@ namespace Adderbot.Modules
                 }
                 else
                 {
-                    if (GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, activeRaid))
+                    if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, activeRaid))
                     {
                         // Try to get the message object for the raid
                         var raidMessage = GetMessageById(activeRaid.MessageId).Result;
@@ -188,7 +189,7 @@ namespace Adderbot.Modules
 
             if (raid != null)
             {
-                if (GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
                 {
                     // Get the SocketRole representation of the string role
                     var socketRole = GetRoleFromString(userRole);
@@ -213,12 +214,7 @@ namespace Adderbot.Modules
                                 // Send success message
                                 await SendMessageToUser($"Added {userRole} to the list of allowed roles for the raid.");
                                 // Redraw raid
-                                await ((IUserMessage) raidMessage)
-                                    .ModifyAsync(x =>
-                                    {
-                                        x.Embed = raid.BuildEmbed();
-                                        x.Content = raid.BuildAllowedRoles();
-                                    });
+                                await RedrawRaid();
                             }
                             else
                             {
@@ -251,7 +247,7 @@ namespace Adderbot.Modules
 
             if (raid != null)
             {
-                if (GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
                 {
                     // Get the role
                     var socketRole = GetRoleFromString(userRole);
@@ -280,11 +276,7 @@ namespace Adderbot.Modules
                             await Context.User.SendMessageAsync(
                                 $"Removed {userRole} from the list of allowed roles for the raid.");
                             // Redraw
-                            await ((IUserMessage) raidMessage).ModifyAsync(x =>
-                            {
-                                x.Embed = raid.BuildEmbed();
-                                x.Content = raid.BuildAllowedRoles();
-                            });
+                            await RedrawRaid();
                         }
                     }
                 }
@@ -300,80 +292,56 @@ namespace Adderbot.Modules
         /// Handles ;raid-add
         /// Forcefully adds a user to the raid with the given emote
         /// </summary>
-        /// <param name="user">String of user @ mention</param>
+        /// <param name="userId">String of user @ mention</param>
         /// <param name="role">String of the role name</param>
         /// <param name="emote">String representation of the emote</param>
         /// <returns></returns>
         [Command("raid-add")]
         [Summary("Adds user as role (override)")]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
-        public async Task RaidAddAsync(string user, string role, [Remainder] string emote = null)
+        public async Task RaidAddAsync(string userId, string role, [Remainder] string emote = null)
         {
-            // Retrieve user id of the user mention
-            var parsedUser = ParseUser(user);
+            // Get the user object from the guild
+            var user = Context.Guild.GetUser(MentionUtils.ParseUser(userId));
 
             // Get the raid
             var raid = GetRaid().Result;
-
-            if (raid != null)
+            if (raid != null && user != null)
             {
-                if (GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
                 {
-                    if (Context.Guild.Users.All(x => x.Id != parsedUser) && !Adderbot.InDebug)
+                    // Check current players for user
+                    if (raid.CurrentPlayers.All(x => x.PlayerId != user.Id))
                     {
-                        await SendMessageToUser($"The user {user} doesn't exist in the channel.");
+                        // Get the Role from the string representation of the role
+                        var parsedRole = RoleHelper.GetRoleFromString(role);
+                        try
+                        {
+                            // Add the player to the raid
+                            raid.AddPlayer(user.Id, parsedRole,
+                                ValidateEmoteValid(emote).Result);
+                        }
+                        catch (ArgumentException ae)
+                        {
+                            // If AddPlayer throws, send error to user
+                            await SendMessageToUser(ae.Message);
+                            return;
+                        }
+
+                        // Send message to the user being added telling them they've been added
+                        await user.SendMessageAsync($"You have been added to the raid in {Context.Channel.Name}.");
+                        // Send the message to the raid lead telling them the user was added
+                        await SendMessageToUser(
+                            $"Added {MentionUtils.MentionUser(user.Id)} to the raid in {Context.Channel.Name}");
+
+                        // Redraw raid
+                        await RedrawRaid();
                     }
                     else
                     {
-                        // Check current players for user
-                        if (raid.CurrentPlayers.All(x => x.PlayerId != parsedUser))
-                        {
-                            // Get the Role from the string representation of the role
-                            var parsedRole = RoleHelper.GetRoleFromString(role);
-                            try
-                            {
-                                // Add the player to the raid
-                                raid.AddPlayer(parsedUser, parsedRole,
-                                    ValidateEmoteValid(emote).Result);
-
-                                // Redraw raid
-                                await ((IUserMessage) await Context.Channel.GetMessageAsync(raid
-                                        .MessageId))
-                                    .ModifyAsync(x =>
-                                    {
-                                        x.Embed = raid.BuildEmbed();
-                                        x.Content = raid.BuildAllowedRoles();
-                                    });
-                            }
-                            catch (ArgumentException ae)
-                            {
-                                // If AddPlayer throws, send error to user
-                                await SendMessageToUser(ae.Message);
-                                return;
-                            }
-
-                            // Send message to the user being added telling them they've been added
-                            await Context.Guild.GetUser(parsedUser)
-                                .SendMessageAsync($"You have been added to the raid in {Context.Channel.Name}.");
-                            // Send the message to the raid lead telling them the user was added
-                            await SendMessageToUser(
-                                $"Added {user} to the raid in {Context.Channel.Name}");
-
-                            // Redraw raid
-                            await ((IUserMessage) (await Context.Channel.GetMessageAsync(
-                                    raid.MessageId)))
-                                .ModifyAsync(x =>
-                                {
-                                    x.Embed = raid.BuildEmbed();
-                                    x.Content = raid.BuildAllowedRoles();
-                                });
-                        }
-                        else
-                        {
-                            // Send error message to raid lead
-                            await SendMessageToUser(
-                                $"{user} was on the raid roster already and could not be added.");
-                        }
+                        // Send error message to raid lead
+                        await SendMessageToUser(
+                            $"{user} was on the raid roster already and could not be added.");
                     }
                 }
                 else
@@ -396,20 +364,20 @@ namespace Adderbot.Modules
         public async Task RaidRemoveAsync(string user)
         {
             // Parse the user @ mention
-            var parsedUser = ParseUser(user);
+            var parsedUser = MentionUtils.ParseUser(user);
 
             // Get the raid
             var raid = GetRaid().Result;
-            
+
             if (raid != null)
             {
-                if (GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
                 {
                     // Get the players from the raid
                     var player = raid.CurrentPlayers.FirstOrDefault(x => x.PlayerId == parsedUser);
                     if (player == null)
                     {
-                        await SendMessageToUser( $"The raid in the channel does not have <@{parsedUser}> in it");
+                        await SendMessageToUser($"The raid in the channel does not have {MentionUtils.MentionUser(parsedUser)} in it");
                     }
                     else
                     {
@@ -419,15 +387,191 @@ namespace Adderbot.Modules
                             await Context.Guild.GetUser(parsedUser)
                                 .SendMessageAsync(
                                     $"You have been removed from the raid in {Context.Channel.Name}.");
-                        
+
+                        await Context.User.SendMessageAsync(
+                            $"Successfully removed {MentionUtils.MentionUser(parsedUser)} from the raid in {Context.Channel.Name}");
+
                         // Redraw raid
-                        await ((IUserMessage) await Context.Channel.GetMessageAsync(raid.MessageId))
-                            .ModifyAsync(x =>
-                            {
-                                x.Embed = raid.BuildEmbed();
-                                x.Content = raid.BuildAllowedRoles();
-                            });
+                        await RedrawRaid();
                     }
+                }
+                else
+                {
+                    // Send the error message to the user
+                    await SendMessageToUser(MessageText.Error.NotRaidLead);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles ;alter-time
+        /// Alters the time of the raid
+        /// </summary>
+        /// <param name="time">String representation of time</param>
+        /// <returns></returns>
+        [Command("alter-time")]
+        [Summary("Removes someone from a raid roster")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        public async Task AlterTime(string time)
+        {
+            // Get the raid
+            var raid = GetRaid().Result;
+
+            if (raid != null)
+            {
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                {
+                    var dt = TimeHelper.ParseTime(raid.Date, time, raid.Timezone);
+                    if (dt == DateTime.UnixEpoch)
+                    {
+                        await SendMessageToUser(MessageText.Error.InvalidTime);
+                    }
+                    else
+                    {
+                        raid.Time = time;
+                        raid.DateTimeObj = dt;
+                        // Redraw raid
+                        await RedrawRaid();
+                    }
+                }
+                else
+                {
+                    // Send the error message to the user
+                    await SendMessageToUser(MessageText.Error.NotRaidLead);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Handles ;alter-timezone
+        /// Alters the timezone of a raid
+        /// </summary>
+        /// <param name="timezone">String representation of the timezone</param>
+        /// <returns></returns>
+        [Command("alter-timezone")]
+        [Summary("Removes someone from a raid roster")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        public async Task AlterTimezone(string timezone)
+        {
+            // Get the raid
+            var raid = GetRaid().Result;
+
+            if (raid != null)
+            {
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                {
+                    var dt = TimeHelper.ParseTime(raid.Date, raid.Time, timezone);
+                    if (dt == DateTime.UnixEpoch)
+                    {
+                        await SendMessageToUser(MessageText.Error.InvalidTimezone);
+                    }
+                    else
+                    {
+                        raid.Timezone = timezone;
+                        raid.DateTimeObj = dt;
+                        // Redraw raid
+                        await RedrawRaid();
+                    }
+                }
+                else
+                {
+                    // Send the error message to the user
+                    await SendMessageToUser(MessageText.Error.NotRaidLead);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Handles ;alter-date
+        /// Alters the date of a raid
+        /// </summary>
+        /// <param name="date">String representation of the date</param>
+        /// <returns></returns>
+        [Command("alter-date")]
+        [Summary("Removes someone from a raid roster")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        public async Task AlterDate(string date)
+        {
+            // Get the raid
+            var raid = GetRaid().Result;
+
+            if (raid != null)
+            {
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                {
+                    var dt = TimeHelper.ParseTime(date, raid.Time, raid.Timezone);
+                    if (dt == DateTime.UnixEpoch)
+                    {
+                        await SendMessageToUser(MessageText.Error.InvalidTimezone);
+                    }
+                    else
+                    {
+                        raid.Date = date;
+                        raid.DateTimeObj = dt;
+                        // Redraw raid
+                        await RedrawRaid();
+                    }
+                }
+                else
+                {
+                    // Send the error message to the user
+                    await SendMessageToUser(MessageText.Error.NotRaidLead);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Handles ;alter-headline
+        /// Alters the date of a headline. Sets the override to true
+        /// </summary>
+        /// <param name="headline">String representation of the headline</param>
+        /// <returns></returns>
+        [Command("alter-headline")]
+        [Summary("Removes someone from a raid roster")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        public async Task AlterHeadline(string headline)
+        {
+            // Get the raid
+            var raid = GetRaid().Result;
+
+            if (raid != null)
+            {
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                {
+                    raid.HeadlineOverride = true;
+                    raid.OverridenHeadline = headline;
+                    // Redraw raid
+                    await RedrawRaid();
+                }
+                else
+                {
+                    // Send the error message to the user
+                    await SendMessageToUser(MessageText.Error.NotRaidLead);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Handles ;reset-headline
+        /// Alters the date of a headline. Sets the override to true
+        /// </summary>
+        /// <returns></returns>
+        [Command("reset-headline")]
+        [Summary("Removes someone from a raid roster")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        public async Task ResetHeadline()
+        {
+            // Get the raid
+            var raid = GetRaid().Result;
+
+            if (raid != null)
+            {
+                if (await GuildHelper.IsUserRaidEditor(Context.Guild, Context.User, raid))
+                {
+                    raid.HeadlineOverride = false;
+                    raid.OverridenHeadline = string.Empty;
+                    // Redraw raid
+                    await RedrawRaid();
                 }
                 else
                 {

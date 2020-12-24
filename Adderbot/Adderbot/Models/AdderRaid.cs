@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Adderbot.Constants;
 using Adderbot.Helpers;
@@ -11,10 +12,40 @@ namespace Adderbot.Models
     public class AdderRaid
     {
         /// <summary>
+        /// The class of the raid (n, v, hm)
+        /// </summary>
+        [JsonProperty("raidclass")]
+        public RaidClass RaidClass { get; set; }
+
+        /// <summary>
         /// The type of the raid (n, v, hm)
         /// </summary>
         [JsonProperty("type")]
         public RaidType Type { get; set; }
+
+        /// <summary>
+        /// The date of the raid
+        /// </summary>
+        [JsonProperty("date")]
+        public string Date { get; set; }
+
+        /// <summary>
+        /// The time of the raid
+        /// </summary>
+        [JsonProperty("time")]
+        public string Time { get; set; }
+        
+        /// <summary>
+        /// The DateTime of the raid
+        /// </summary>
+        [JsonProperty("datetime")]
+        public DateTime DateTimeObj { get; set; }
+
+        /// <summary>
+        /// The timezone of the raid
+        /// </summary>
+        [JsonProperty("timezone")]
+        public string Timezone { get; set; }
 
         /// <summary>
         /// The ID of the Discord user who is leading the trial
@@ -29,50 +60,68 @@ namespace Adderbot.Models
         public ulong MessageId { get; set; }
 
         /// <summary>
-        /// The headline of the raid ("Gear up for....")
-        /// </summary>
-        [JsonProperty("headline")]
-        public string Headline { get; set; }
-
-        /// <summary>
         /// List of the roles in the raid (MT, OT, rDPS, etc)
         /// </summary>
         [JsonProperty("availableRoles")]
-        public List<Role> AvailableRoles { get; set; }
+        public SynchronizedCollection<Role> AvailableRoles { get; set; }
 
         /// <summary>
         /// List of current players signed up for the raid
         /// </summary>
         [JsonProperty("currentPlayers")]
-        public List<AdderPlayer> CurrentPlayers { get; set; }
+        public SynchronizedCollection<AdderPlayer> CurrentPlayers { get; set; }
 
         /// <summary>
         /// List of discord roles that can sign up for the raid
         /// </summary>
         [JsonProperty("allowedRoles")]
-        public List<ulong> AllowedRoles { get; set; }
+        public SynchronizedCollection<ulong> AllowedRoles { get; set; }
+
+        /// <summary>
+        /// Override for the headline of a raid
+        /// </summary>
+        [JsonProperty("headlineOverride")]
+        public bool HeadlineOverride { get; set; }
+
+        /// <summary>
+        /// Overriden headline. Will not be used for the raid headline unless HeadlineOverride = true
+        /// </summary>
+        [JsonProperty("overridenHeadline")]
+        public string OverridenHeadline { get; set; }
 
         /// <summary>
         /// Converts from JSON to AdderRaid
         /// </summary>
+        /// <param name="raidClass"></param>
         /// <param name="type"></param>
         /// <param name="lead"></param>
         /// <param name="messageId"></param>
-        /// <param name="headline"></param>
+        /// <param name="date"></param>
+        /// <param name="timezone"></param>
         /// <param name="availableRoles"></param>
         /// <param name="currentPlayers"></param>
         /// <param name="allowedRoles"></param>
+        /// <param name="time"></param>
+        /// <param name="headlineOverride"></param>
+        /// <param name="overridenHeadline"></param>
         [JsonConstructor]
-        public AdderRaid(RaidType type, ulong lead, ulong messageId, string headline, List<Role> availableRoles,
-            List<AdderPlayer> currentPlayers, List<ulong> allowedRoles)
+        public AdderRaid(RaidClass raidClass, RaidType type, string date, string time, string timezone, ulong lead,
+            ulong messageId, SynchronizedCollection<Role> availableRoles,
+            SynchronizedCollection<AdderPlayer> currentPlayers, SynchronizedCollection<ulong> allowedRoles,
+            bool headlineOverride, string overridenHeadline)
         {
+            RaidClass = raidClass;
             Type = type;
             Lead = lead;
             MessageId = messageId;
-            Headline = headline;
+            Date = date;
+            Time = time;
+            Timezone = timezone;
             AvailableRoles = availableRoles;
             CurrentPlayers = currentPlayers;
             AllowedRoles = allowedRoles;
+            HeadlineOverride = headlineOverride;
+            OverridenHeadline = overridenHeadline;
         }
 
         /// <summary>
@@ -85,38 +134,48 @@ namespace Adderbot.Models
         /// <param name="timezone"></param>
         /// <param name="lead"></param>
         /// <param name="fNum"></param>
+        /// <param name="nNum"></param>
         /// <param name="allowedRoles"></param>
         /// <param name="mNum"></param>
         /// <param name="rNum"></param>
         public AdderRaid(string raidClass, string raidType, string date, string time,
-            string timezone, ulong lead, int mNum, int rNum, int fNum, int nNum, List<ulong> allowedRoles)
+            string timezone, ulong lead, int mNum, int rNum, int fNum, int nNum,
+            SynchronizedCollection<ulong> allowedRoles)
         {
+            var dt = TimeHelper.ParseTime(date, time, timezone);
+            if (dt == DateTime.UnixEpoch) throw new ArgumentException(MessageText.Error.InvalidTime);
+
+            DateTimeObj = dt;
             Lead = lead;
             MessageId = 0;
-            CurrentPlayers = new List<AdderPlayer>();
+            CurrentPlayers = new SynchronizedCollection<AdderPlayer>();
             AllowedRoles = allowedRoles;
-            AvailableRoles = new List<Role>();
+            AvailableRoles = new SynchronizedCollection<Role>();
+            Date = date;
+            Time = time;
+            Timezone = timezone;
+            HeadlineOverride = false;
+            OverridenHeadline = string.Empty;
 
             // Determine the class of raid (normal, veteran, hard mode)
-            RaidClass rClass;
             switch (raidClass.ToLower())
             {
                 case Keywords.Create.N:
                 case Keywords.Create.Norm:
                 case Keywords.Create.Normal:
-                    rClass = RaidClass.Norm;
+                    RaidClass = RaidClass.Norm;
                     break;
                 case Keywords.Create.V:
                 case Keywords.Create.Vet:
                 case Keywords.Create.Veteran:
-                    rClass = RaidClass.Vet;
+                    RaidClass = RaidClass.Vet;
                     break;
                 case Keywords.Create.HM:
                 case Keywords.Create.Hardmode:
-                    rClass = RaidClass.Hardmode;
+                    RaidClass = RaidClass.Hardmode;
                     break;
                 default:
-                    rClass = RaidClass.Invalid;
+                    RaidClass = RaidClass.Invalid;
                     break;
             }
 
@@ -139,7 +198,7 @@ namespace Adderbot.Models
                     break;
                 case Keywords.Create.Hrc:
                     Type = RaidType.Hrc;
-                    if (rClass == RaidClass.Hardmode)
+                    if (RaidClass == RaidClass.Hardmode)
                     {
                         expectedDpsNum = 8;
                         AvailableRoles.Add(Role.Ot);
@@ -288,9 +347,6 @@ namespace Adderbot.Models
             // Check that the number of dps is the required number
             if ((mNum + rNum + fNum + nNum) != expectedDpsNum)
                 throw new ArgumentException("Could create a raid with that many dps.");
-
-            // Set the headline
-            Headline = $"Gear up for a {GenerateRaidName(rClass, Type)} on {date} @{time} {timezone}!";
 
             int i;
 
@@ -455,7 +511,7 @@ namespace Adderbot.Models
         /// </summary>
         /// <param name="role"></param>
         /// <returns></returns>
-        private static bool IsAlt(Role role) => Role.AltDps <= role && role <= Role.AltHealer;
+        private static bool IsAlt(Role role) => Role.AltDps <= role && role <= Role.AltCro;
 
         /// <summary>
         /// Returns if the role is invalid
@@ -470,9 +526,44 @@ namespace Adderbot.Models
         /// <returns></returns>
         private string Build()
         {
-            return $"{BuildAllowedRoles()}\n" +
-                   $"{Headline}\n" +
+            return $"**Trial:** {GenerateRaidName(RaidClass, Type)}\n" +
+                   $"{BuildDate()}\n" +
+                   $"{BuildTime()}\n" +
+                   $"{BuildLead()}\n" +
+                   $"**-----------------------------------------------**\n" +
                    $"{BuildPlayers()}";
+        }
+
+        /// <summary>
+        /// Generates the raid's date
+        /// </summary>
+        /// <returns></returns>
+        private string BuildDate()
+        {
+            return DateTimeFormatInfo.CurrentInfo != null ? $"**Date:** {DateTimeObj:dddd, MMMM dd yyyy}" : null;
+        }
+
+        private string BuildTime()
+        {
+            return $"**Time:** {Time} {Timezone}";
+        }
+
+        /// <summary>
+        /// Generates the raid's headline
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateHeadline()
+        {
+            return HeadlineOverride ? OverridenHeadline : $"Gear up for a {GenerateRaidName(RaidClass, Type)} on {Date} @{Time} {Timezone}!";
+        }
+
+        /// <summary>
+        /// Builds the trial lead text
+        /// </summary>
+        /// <returns></returns>
+        private string BuildLead()
+        {
+            return $"**Leader:** {MentionUtils.MentionUser(Lead)}";
         }
 
         /// <summary>
@@ -485,11 +576,14 @@ namespace Adderbot.Models
             foreach (var role in AllowedRoles)
             {
                 if (role == 0)
+                {
                     result += "@everyone ";
+                }
                 else
-                    result += $"<@&{role}> ";
+                {
+                    result += $"{MentionUtils.MentionRole(role)} ";
+                }
             }
-
             return result;
         }
 
@@ -545,7 +639,7 @@ namespace Adderbot.Models
                     throw new ArgumentException("Invalid raid type");
             }
 
-            eb.Title = Headline;
+            eb.Title = GenerateHeadline();
             eb.Description = Build();
             return eb.Build();
         }
@@ -585,7 +679,7 @@ namespace Adderbot.Models
         private static string GeneratePlayerString(AdderPlayer player)
         {
             return
-                $"{RoleRepresentations.GetRepresentation(player.Role)}: <@{player.PlayerId}> {player.Emote}\n";
+                $"{RoleRepresentations.GetRepresentation(player.Role)}: {MentionUtils.MentionUser(player.PlayerId)} {player.Emote}\n";
         }
     }
 }

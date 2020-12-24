@@ -15,7 +15,7 @@ namespace Adderbot.Modules
         public async Task FlipCoinAsync()
         {
             await TimeDeleteMessage(
-                Adderbot.randomGen.Next(0, 2) == 0 ? (await ReplyAsync("Heads!")) : (await ReplyAsync("Tails!")),
+                Adderbot.RandomGen.Next(0, 2) == 0 ? (await ReplyAsync("Heads!")) : (await ReplyAsync("Tails!")),
                 10000);
         }
     }

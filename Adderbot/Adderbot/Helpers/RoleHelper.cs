@@ -1,4 +1,3 @@
-using System;
 using Adderbot.Constants;
 using Adderbot.Models;
 
@@ -40,6 +39,9 @@ namespace Adderbot.Helpers
                 case Keywords.Role.TankRole.Mt:
                 case Keywords.Role.TankRole.MainTank:
                     return Role.Mt;
+                case Keywords.Role.TankRole.Ot:
+                case Keywords.Role.TankRole.OffTank:
+                    return Role.Ot;
                 case Keywords.Role.HealerRole.H:
                 case Keywords.Role.HealerRole.Healer:
                     return Role.H;

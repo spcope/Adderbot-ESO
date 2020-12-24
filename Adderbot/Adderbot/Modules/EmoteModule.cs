@@ -3,12 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Adderbot.Constants;
+using Adderbot.Helpers;
 using Discord;
 using Discord.Commands;
 
 namespace Adderbot.Modules
 {
-    internal class EmoteModule : BaseModule
+    public class EmoteModule : BaseModule
     {
         /// <summary>
         /// Handles ;check-emotes
@@ -20,8 +21,7 @@ namespace Adderbot.Modules
         [RequireBotPermission(ChannelPermission.SendMessages)]
         public async Task CheckEmotes()
         {
-            var guild = GetGuild().Result;
-            if (guild != null && guild.EmotesAvailable)
+            if (GetGuild().Result != null && GuildHelper.CheckEmoteAvailability(Context.Guild))
             {
                 await ReplyAsync(
                     $"Available Emotes\n{Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)).Aggregate("", (current, emote) => current + $"{emote} - {emote.Name}\n")}");
@@ -32,6 +32,11 @@ namespace Adderbot.Modules
             }
         }
         
+        /// <summary>
+        /// Handles ;add-emotes
+        /// Adds all the emotes from the bot to the Discord guild
+        /// </summary>
+        /// <returns></returns>
         [Command("add-emotes")]
         [Summary("Attempts to add all the emotes the bot uses & enables them")]
         [RequireBotPermission(ChannelPermission.SendMessages)]
@@ -41,28 +46,43 @@ namespace Adderbot.Modules
         {
             try
             {
+                // Get the guild
                 var guild = GetGuild().Result;
                 if (guild != null)
                 {
+                    // Get the path of this executable
                     var path = Directory.GetCurrentDirectory();
 
+                    // Spin through all emotes Adderbot supports
                     foreach (var emote in Adderbot.EmoteNames)
+                    {
+                        // If there is not an emote with the given name create it
+                        if (Context.Guild.Emotes.Any(x => x.Name == emote)) continue;
+                        
                         await Context.Guild.CreateEmoteAsync(emote,
                             new Image($@"{path}\Media\{emote}.png"));
+                        await Task.Delay(1000);
+                    }
 
+                    // Set emote availability flag to true
                     guild.EmotesAvailable = true;
+                    
+                    await SendMessageToUser(MessageText.Success.EmoteAddSuccessful);
                 }
             }
             catch (Exception)
             {
-                await Context.User.SendMessageAsync(
-                    "Could not add all the emotes, typically this means you do not have enough space. " +
-                    "At least 24 slots are required to add all emotes.");
+                await Context.User.SendMessageAsync(MessageText.Error.EmotesCannotBeAdded);
             }
         }
         
+        /// <summary>
+        /// Handles ;remove-emotes
+        /// Attempts to remove all emotes the bot uses in the Discord guild
+        /// </summary>
+        /// <returns></returns>
         [Command("remove-emotes")]
-        [Summary("Attempts to add all the emotes the bot uses & enables them")]
+        [Summary("Attempts to remove all the emotes the bot uses")]
         [RequireBotPermission(ChannelPermission.SendMessages)]
         [RequireBotPermission(GuildPermission.ManageEmojis)]
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -73,16 +93,30 @@ namespace Adderbot.Modules
                 var guild = GetGuild().Result;
                 if (guild != null)
                 {
-                    foreach (var emote in Context.Guild.Emotes.Where(x => Adderbot.EmoteNames.Contains(x.Name)))
-                        await Context.Guild.DeleteEmoteAsync(emote);
+                    await SendMessageToUser(MessageText.Misc.LongCommandWarning);
+                    
+                    // Spin through all emotes Adderbot supports
+                    foreach (var emote in Adderbot.EmoteNames)
+                    {
+                        // Get the emote if exists
+                        var guildEmote = Context.Guild.Emotes.FirstOrDefault(x => x.Name != emote);
+                        
+                        // If there is not an emote with the given name create it
+                        if (guildEmote == null) continue;
+                        
+                        await Context.Guild.DeleteEmoteAsync(guildEmote);
+                        await Task.Delay(60000);
+                    }
 
+                    // Set emote availability flag to false
                     guild.EmotesAvailable = false;
+                    
+                    await SendMessageToUser(MessageText.Success.EmoteDeleteSuccessful);
                 }
             }
             catch (Exception)
             {
-                await Context.User.SendMessageAsync(
-                    "Could not delete all the emotes.");
+                await Context.User.SendMessageAsync(MessageText.Error.EmotesCannotBeDeleted);
             }
         }
     }

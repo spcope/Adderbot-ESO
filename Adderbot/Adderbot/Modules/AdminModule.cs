@@ -9,7 +9,7 @@ namespace Adderbot.Modules
     /// <summary>
     /// Module of all administrative commands
     /// </summary>
-    internal class AdminModule : BaseModule
+    public class AdminModule : BaseModule
     {
         /// <summary>
         /// Handles ;purge

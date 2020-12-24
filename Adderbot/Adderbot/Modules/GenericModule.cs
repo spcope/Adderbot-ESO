@@ -28,12 +28,7 @@ namespace Adderbot.Modules
                 // Remove the player from the raid
                 raid.CurrentPlayers.Remove(adderPlayer);
                 // Redraw raid
-                await ((IUserMessage) await Context.Channel.GetMessageAsync(raid.MessageId))
-                    .ModifyAsync(x =>
-                    {
-                        x.Embed = raid.BuildEmbed();
-                        x.Content = raid.BuildAllowedRoles();
-                    });
+                await RedrawRaid();
             }
         }
 
@@ -48,15 +43,14 @@ namespace Adderbot.Modules
         {
             // Flag if user is an admin
             var isAdmin = false;
-            // Flag if the user is a raid lead
-            bool isTrialLead;
 
             // Get the guild 
             var guild = GetGuild().Result;
             
             if (guild != null)
             {
-                if (GuildHelper.IsUserAdminInGuild(Context.Guild, Context.User))
+                bool isTrialLead;
+                if (await GuildHelper.IsUserAdminInGuild(Context.Guild, Context.User))
                 {
                     // If user is admin, set admin and trial lead flags
                     isAdmin = true;

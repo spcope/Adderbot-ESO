@@ -26,7 +26,7 @@ namespace Adderbot.Models
         /// <summary>
         /// A list of AdderChannels that represents the active raids in the Discord guild (server)
         /// </summary>
-        [JsonProperty("ActiveRaids")] public List<AdderChannel> ActiveRaids { get; set; }
+        [JsonProperty("ActiveRaids")] public SynchronizedCollection<AdderChannel> ActiveRaids { get; set; }
 
         /// <summary>
         /// Creates an empty AdderGuild with the given Discord Id of the guild (server)
@@ -36,7 +36,7 @@ namespace Adderbot.Models
         {
             GuildId = gid;
             Lead = 0;
-            ActiveRaids = new List<AdderChannel>();
+            ActiveRaids = new SynchronizedCollection<AdderChannel>();
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Adderbot.Models
         {
             GuildId = gid;
             Lead = lead;
-            ActiveRaids = new List<AdderChannel>();
+            ActiveRaids = new SynchronizedCollection<AdderChannel>();
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Adderbot.Models
         /// <param name="lead">Discord Id of the role used to create raids</param>
         /// <param name="ars">List of AdderChannels representing active raids in the Discord guild (server)</param>
         [JsonConstructor]
-        public AdderGuild(ulong gid, bool emotesAvailable, ulong lead, List<AdderChannel> ars)
+        public AdderGuild(ulong gid, bool emotesAvailable, ulong lead, SynchronizedCollection<AdderChannel> ars)
         {
             GuildId = gid;
             EmotesAvailable = emotesAvailable;

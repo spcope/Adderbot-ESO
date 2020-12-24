@@ -9,7 +9,7 @@ namespace Adderbot.Modules.Roles
     /// <summary>
     /// Module of all commands related to signing up as a Necromancer
     /// </summary>
-    internal class CroModule : BaseModule
+    public class CroModule : BaseModule
     {
         #region Generics
 
