@@ -45,6 +45,7 @@ namespace Adderbot.Constants
                 "Time was in invalid time format. Please use 12-hour time with am/pm attached. For example 2pm or 7am";
 
             public const string InvalidTimezone = "Timezone is invalid. Please use a standard timezone.";
+            public const string NotCorrectGoldFormat = "The amount of gold you provided is not a double value";
         }
 
         public static class Success
